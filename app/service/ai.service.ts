@@ -145,10 +145,6 @@ const tools = [
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY || '');
 const colors = COLORS;
-const model = genAI.getGenerativeModel({
-  model: 'gemini-2.0-flash', // may use gemini pro for better results later
-  tools: tools
-});
 
 export async function handleUserPrompt(prompt: string, accessToken: string, userTimeZone?: string) {
   try {
@@ -266,7 +262,6 @@ Example: If user says "schedule tennis tomorrow at 8am for 1.5 hours" (and today
 - When the user only greets you or makes small talk, reply with short plain text without calling any tools.
 `;
 
-    // Create model instance with system instruction for this request
     const model = genAI.getGenerativeModel({
       model: 'gemini-2.0-flash',
       tools: tools,
@@ -475,3 +470,6 @@ Example: If user says "schedule tennis tomorrow at 8am for 1.5 hours" (and today
     throw error;
   }
 }
+
+
+//TODO: avoid duplicate code, add reusable types and functions as needed 

@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { COLORS } from "../types/colors";
 import React from "react";
 
-export interface CalendarEvent {
+export interface CalendarEvent {  // move away and reuse in other places
   id: string;
   title: string;
   startTime: string;
