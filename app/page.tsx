@@ -9,6 +9,7 @@ import {
   PromptInputSubmit,
 } from "@/components/ui/shadcn-io/ai/prompt-input";
 import { Loader } from "@/components/ui/shadcn-io/ai/loader";
+import { EventPreview } from "./components/EventPreview";
 
 export default function AskGarbi() {
   const { data: session } = useSession();
@@ -104,11 +105,7 @@ export default function AskGarbi() {
 
            
              <div className="mt-4 p-4">
-               <pre className="text-xs overflow-auto">
-                 {
-                  typeof data === 'string' ? data : JSON.stringify(data, null, 2)
-                 }
-               </pre>
+               {data && <EventPreview data={data}/>}
              </div>
            
 

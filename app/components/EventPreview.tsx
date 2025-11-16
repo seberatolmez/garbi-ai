@@ -1,15 +1,33 @@
 // structure event preview component
 
-import { CalendarEvent } from "./EventCard";
+ const EventPreviewTypes =  {
+    EVENT: 'event', // create/update
+    EVENTS: 'events', // listing 
+    SUCCESS:'success', // delete
+    TEXT:'text', // issue
+    DISAMBIGUATION:'disambiguation' // more than on operations
+}
+export function EventPreview({ data = {} }: any) { 
 
-export function EventPreview() {
-
+    if(!data) {
+        return null;
+    }
     /**
-     * show title, date and time of the event for created/updated/listed events with differen colors
+     * show title, date and time of the event for created/updated/listed events with different colors
      * show title and message for deleted events
      * show only one or more events in case of listing events
      * avoid duplicate code for each case
+     * returning types: event,success,text,disambiguation
+     * show message for all cases
      * */ 
-    
+    if(data?.type==EventPreviewTypes.EVENT) {
+
+        return <div>
+            <li>{data.message}</li>
+            <li>{data.event?.summary}</li>
+            <li>{data.event?.start?.dateTime}</li>
+            <li>{data.event?.end?.dateTime}</li>
+        </div>
+    }
     
 }
