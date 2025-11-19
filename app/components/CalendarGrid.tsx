@@ -269,7 +269,7 @@ function MonthView({currentDate,events,onEventClick, today}:
                       className={cn(
                         "text-xs p-1 rounded cursor-pointer transition-all hover:scale-105",
                         `bg-calendar`,
-                        "text-white font-medium truncate"
+                        "text-foreground font-medium truncate"
                       )}
                     >
                       {event.startTime} {event.title}

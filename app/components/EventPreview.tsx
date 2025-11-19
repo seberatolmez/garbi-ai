@@ -64,9 +64,10 @@ export function EventPreview({ data = {} }: any) {
       {/* Header */}
       <div className="flex items-center gap-2 border-b pb-2 mb-3">
         <Image
-            src={"/google-calendar-logo.png"}
+            src={"/google-calendar-logo.png"} 
             alt={"Google Calendar Logo"}
-            className="w-6 h-6"
+            width={40}
+            height={40}
         />
         <span className="font-medium text-gray-800">Google Calendar</span>
       </div>

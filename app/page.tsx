@@ -102,12 +102,10 @@ export default function AskGarbi() {
                {error}
              </div>
            )}
-
            
              <div className="mt-4 p-4">
                {data && <EventPreview data={data}/>}
              </div>
-           
 
           </div>  
         </section>
