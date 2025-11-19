@@ -1,4 +1,5 @@
 // structure event preview component
+import Image from "next/image";
 
  const EventPreviewTypes =  {
     EVENT: 'event', // create/update
@@ -8,7 +9,7 @@
     DISAMBIGUATION:'disambiguation' // more than on operations
 }
 
-function identifyInfoBar({data= {}}:any) {
+function IdentifyInfoBar({data= {}}:any) {
     if(!data) {
         return null;
     }
@@ -23,14 +24,17 @@ function identifyInfoBar({data= {}}:any) {
                    </div>
         }
         case EventPreviewTypes.EVENTS: { // title, date but list format, message 
-            const events = [data.events];
-            return events.map(event => {
-                        <div className="flex flex-col">
+            const events = data.events || [];
+            return (
+                    <div className="flex flex-col gap-2">
+                        {events.map((event: any, i: number) => (
+                        <div className="flex flex-col" key={i}>
                             <span className="text-lg font-semibold text-gray-900">{event.title}</span>
-                            <span className="text-sm text-gray-600">{}</span> {/* place holder for date, for now*/}
+                            <span className="text-sm text-gray-600">{event.message}</span>
                         </div>
-            })
-    
+                        ))}
+                    </div>
+                );
         }
 
         case EventPreviewTypes.TEXT:
@@ -40,8 +44,6 @@ function identifyInfoBar({data= {}}:any) {
             return <div className="flex flex-col">
                     <span className="text-lg font-semibold text-gray-900">{data.message}</span>
             </div>
-
-            break;
         }
 
       } 
@@ -56,29 +58,24 @@ export function EventPreview({ data = {} }: any) {
     if(!operationType) {
         return null;
     }
-    /**
-     * show title, date and time of the event for created/updated/listed events with different colors
-     * show title and message for deleted events
-     * show only one or more events in case of listing events
-     * avoid duplicate code for each case
-     * returning types: event,success,text,disambiguation
-     * show message for all cases
-     * */ 
-    
-    /*if(data?.type==EventPreviewTypes.EVENT) {
 
-        return <div>
-            <li>{data.message}</li>
-            <li>{data.event?.summary}</li>
-            <li>{data.event?.start?.dateTime}</li>
-            <li>{data.event?.end?.dateTime}</li>
-        </div>
-    } */
+    return(
+        <div className="w-full max-w-md border rounded-2xl shadow p-4 bg-white">
+      {/* Header */}
+      <div className="flex items-center gap-2 border-b pb-2 mb-3">
+        <Image
+            src={"/google-calendar-logo.png"}
+            alt={"Google Calendar Logo"}
+            className="w-6 h-6"
+        />
+        <span className="font-medium text-gray-800">Google Calendar</span>
+      </div>
 
-        return (
-
-            
-        );
+      {/* Info Bar */}
+       {}
+        
+    </div>
+    );
      
     
 }
