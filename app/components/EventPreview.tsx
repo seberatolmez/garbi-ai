@@ -49,7 +49,7 @@ function IdentifyInfoBar({data= {}}:any) {
       } 
 }
 
-function toBasicIsoFormat(date: Date) { 
+function toBasicIsoFormat(startTime: Date,endTime: Date) { 
     {/*convert RC3339 complex date format to basic date format. Ex: "Fri, 19 Oct 2025 * 09.00-14.00" */}
 }
 export function EventPreview({ data = {} }: any) { 
@@ -72,7 +72,7 @@ export function EventPreview({ data = {} }: any) {
       </div>
 
       {/* Info Bar */}
-       {}
+     <IdentifyInfoBar data={data}/>
         
     </div>
     );
