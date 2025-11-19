@@ -4,12 +4,56 @@
     EVENT: 'event', // create/update
     EVENTS: 'events', // listing 
     SUCCESS:'success', // delete
-    TEXT:'text', // issue
+    TEXT:'text', // issue or suggestion
     DISAMBIGUATION:'disambiguation' // more than on operations
+}
+
+function identifyInfoBar({data= {}}:any) {
+    if(!data) {
+        return null;
+    }
+
+     const operationType = data?.type; 
+      switch(operationType){
+
+        case EventPreviewTypes.EVENT: { // title, date , message 
+            return <div className="flex flex-col">
+                    <span className="text-lg font-semibold text-gray-900">{data.title}</span>
+                    <span className="text-sm text-gray-600">{data.message}</span> {/*place holder for date, for now*/}
+                   </div>
+        }
+        case EventPreviewTypes.EVENTS: { // title, date but list format, message 
+            const events = [data.events];
+            return events.map(event => {
+                        <div className="flex flex-col">
+                            <span className="text-lg font-semibold text-gray-900">{event.title}</span>
+                            <span className="text-sm text-gray-600">{}</span> {/* place holder for date, for now*/}
+                        </div>
+            })
+    
+        }
+
+        case EventPreviewTypes.TEXT:
+        case EventPreviewTypes.SUCCESS:
+        case EventPreviewTypes.DISAMBIGUATION: // return message
+        {
+            return <div className="flex flex-col">
+                    <span className="text-lg font-semibold text-gray-900">{data.message}</span>
+            </div>
+
+            break;
+        }
+
+      } 
+}
+
+function toBasicIsoFormat(date: Date) { 
+    {/*convert RC3339 complex date format to basic date format. Ex: "Fri, 19 Oct 2025 * 09.00-14.00" */}
 }
 export function EventPreview({ data = {} }: any) { 
 
-    if(!data) {
+    const operationType = data?.type;
+    if(!operationType) {
         return null;
     }
     /**
@@ -31,26 +75,10 @@ export function EventPreview({ data = {} }: any) {
         </div>
     } */
 
-      const operationType = data?.type; 
-      switch(operationType){
+        return (
 
-        case EventPreviewTypes.EVENT: { // title, date , message 
-
-            break;
-        }
-        case EventPreviewTypes.EVENTS: { // title, date but list format, message 
-
-            break;
-        }
-
-        case EventPreviewTypes.TEXT:
-        case EventPreviewTypes.SUCCESS:
-        case EventPreviewTypes.DISAMBIGUATION:
-        {
-
-            break;
-        }
-
-      } 
+            
+        );
+     
     
 }
