@@ -20,7 +20,8 @@ export function EventPreview({ data = {} }: any) {
      * returning types: event,success,text,disambiguation
      * show message for all cases
      * */ 
-    if(data?.type==EventPreviewTypes.EVENT) {
+    
+    /*if(data?.type==EventPreviewTypes.EVENT) {
 
         return <div>
             <li>{data.message}</li>
@@ -28,6 +29,28 @@ export function EventPreview({ data = {} }: any) {
             <li>{data.event?.start?.dateTime}</li>
             <li>{data.event?.end?.dateTime}</li>
         </div>
-    }
+    } */
+
+      const operationType = data?.type; 
+      switch(operationType){
+
+        case EventPreviewTypes.EVENT: { // title, date , message 
+
+            break;
+        }
+        case EventPreviewTypes.EVENTS: { // title, date but list format, message 
+
+            break;
+        }
+
+        case EventPreviewTypes.TEXT:
+        case EventPreviewTypes.SUCCESS:
+        case EventPreviewTypes.DISAMBIGUATION:
+        {
+
+            break;
+        }
+
+      } 
     
 }
