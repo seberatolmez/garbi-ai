@@ -50,8 +50,44 @@ function IdentifyInfoBar({data= {}}:any) {
 }
 
 function toBasicIsoFormat(startTime: Date,endTime: Date) { 
-    {/*convert RC3339 complex date format to basic date format. Ex: "Fri, 19 Oct 2025 * 09.00-14.00" */}
+    {/*convert RC3339 complex date format to basic date format. 2025-11-09T09:00:00Z -> Ex: "Fri, 19 Oct 2025 * 09.00-14.00" */}
+    const start= new Date(startTime);  // 19 Nov • 09.00 - 14.00 for now. 
+    const sMonth= start.getMonth();
+    const sDay= start.getDay();
+    const sHour= start.getHours();
+
+    const end= new Date(endTime);
+    const endHour=end.getHours();
+
+    const months= ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+    const monthLabel= months[sMonth]
+
+    //check if today 
+    const now = new Date();
+    const isToday=
+        start.getDate() === now.getDate() &&
+        sMonth === now.getMonth() &&
+        start.getFullYear() === now.getFullYear()
+
+    //check if tomorrow 
+    const isTomorrow= 
+        start.getDate() === now.getDate()+1 &&
+        sMonth === now.getMonth()    //: edge-case: last day of month
+    const hourLabel= `${sHour}-${endHour}`
+    const dateLabel = `${sDay} ${monthLabel} • ${hourLabel}`
+
+    if(isToday) {
+        return `Today, ${hourLabel}`
+    }
+    else if(isTomorrow) {
+        return `Tomorrow, ${hourLabel}`
+    }
+    else {
+        return dateLabel;
+    }
+
 }
+
 export function EventPreview({ data = {} }: any) { 
 
     const operationType = data?.type;
