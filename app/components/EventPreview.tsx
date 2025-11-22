@@ -18,9 +18,11 @@ function IdentifyInfoBar({data= {}}:any) {
       switch(operationType){
 
         case EventPreviewTypes.EVENT: { // title, date , message 
+            const start = data.start?.dateTime;
+            const end = data.end?.dateTime;
             return <div className="flex flex-col">
                     <span className="text-lg font-semibold text-gray-900">{data.title}</span>
-                    <span className="text-sm text-gray-600">{data.message}</span> {/*place holder for date, for now*/}
+                    <span className="text-sm text-gray-600">{toBasicIsoFormat(start,end)}</span> {/*place holder for date, for now*/}
                    </div>
         }
         case EventPreviewTypes.EVENTS: { // title, date but list format, message 
