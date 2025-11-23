@@ -16,7 +16,6 @@ function IdentifyInfoBar({data= {}}:any) {
     const start = data.start?.dateTime;
     const end = data.end?.dateTime;
     const date = toBasicIsoFormat(start,end);
-    console.log(date);
 
      const operationType = data?.type; 
       switch(operationType){
@@ -56,12 +55,19 @@ function IdentifyInfoBar({data= {}}:any) {
 
 function toBasicIsoFormat(startTime: string,endTime: string) { 
     {/*convert RC3339 complex date format to basic date format. 2025-11-09T09:00:00Z -> Ex: "Fri, 19 Oct 2025 * 09.00-14.00" */}
-    const start= new Date(startTime);  // 19 Nov • 09.00 - 14.00 for now. 
+    const start= new Date(startTime);
+    const end= new Date(endTime);  // 19 Nov • 09.00 - 14.00 for now.
+    
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+        console.warn("Invalid date format received:", { startTime, endTime });
+        return "-";
+    }
+    
     const sMonth= start.getMonth();
     const sDay= start.getDate();
     const sHour= start.getHours();
 
-    const end= new Date(endTime);
+    
     const endHour=end.getHours();
 
     const months= ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
@@ -78,7 +84,7 @@ function toBasicIsoFormat(startTime: string,endTime: string) {
     const isTomorrow= 
         sDay === now.getDate()+1 &&
         sMonth === now.getMonth()    //: edge-case: last day of month
-        
+
     const hourLabel= `${sHour}-${endHour}`
     const dateLabel = `${sDay} ${monthLabel} • ${hourLabel}`
 
