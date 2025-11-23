@@ -53,7 +53,7 @@ function IdentifyInfoBar({data= {}}:any) {
       } 
 }
 
-function toBasicIsoFormat(startTime: string,endTime: string) { 
+function toBasicIsoFormat(startTime: string|Date,endTime: string|Date) { 
     {/*convert RC3339 complex date format to basic date format. 2025-11-09T09:00:00Z -> Ex: "Fri, 19 Oct 2025 * 09.00-14.00" */}
     const start= new Date(startTime);
     const end= new Date(endTime);  // 19 Nov • 09.00 - 14.00 for now.
@@ -85,7 +85,7 @@ function toBasicIsoFormat(startTime: string,endTime: string) {
         sDay === now.getDate()+1 &&
         sMonth === now.getMonth()    //: edge-case: last day of month
 
-    const hourLabel= `${sHour}-${endHour}`
+    const hourLabel = `${String(sHour).padStart(2, "0")}-${String(endHour).padStart(2, "0")}`; // TODO: do parsing it outside above 
     const dateLabel = `${sDay} ${monthLabel} • ${hourLabel}`
 
     if(isToday) {
