@@ -13,16 +13,19 @@ function IdentifyInfoBar({data= {}}:any) {
     if(!data) {
         return null;
     }
+    const start = data.start?.dateTime;
+    const end = data.end?.dateTime;
+    const date = toBasicIsoFormat(start,end);
+    console.log(date);
 
      const operationType = data?.type; 
       switch(operationType){
 
         case EventPreviewTypes.EVENT: { // title, date , message 
-            const start = data.start?.dateTime;
-            const end = data.end?.dateTime;
+            
             return <div className="flex flex-col">
                     <span className="text-lg font-semibold text-gray-900">{data.title}</span>
-                    <span className="text-sm text-gray-600">{toBasicIsoFormat(start,end)}</span> {/*place holder for date, for now*/}
+                    <span className="text-sm text-gray-600">{date}</span> {/*place holder for date, for now*/}
                    </div>
         }
         case EventPreviewTypes.EVENTS: { // title, date but list format, message 
@@ -51,11 +54,11 @@ function IdentifyInfoBar({data= {}}:any) {
       } 
 }
 
-function toBasicIsoFormat(startTime: Date,endTime: Date) { 
+function toBasicIsoFormat(startTime: string,endTime: string) { 
     {/*convert RC3339 complex date format to basic date format. 2025-11-09T09:00:00Z -> Ex: "Fri, 19 Oct 2025 * 09.00-14.00" */}
     const start= new Date(startTime);  // 19 Nov • 09.00 - 14.00 for now. 
     const sMonth= start.getMonth();
-    const sDay= start.getDay();
+    const sDay= start.getDate();
     const sHour= start.getHours();
 
     const end= new Date(endTime);
@@ -67,14 +70,15 @@ function toBasicIsoFormat(startTime: Date,endTime: Date) {
     //check if today 
     const now = new Date();
     const isToday=
-        start.getDate() === now.getDate() &&
+        sDay === now.getDate() &&
         sMonth === now.getMonth() &&
         start.getFullYear() === now.getFullYear()
 
     //check if tomorrow 
     const isTomorrow= 
-        start.getDate() === now.getDate()+1 &&
+        sDay === now.getDate()+1 &&
         sMonth === now.getMonth()    //: edge-case: last day of month
+        
     const hourLabel= `${sHour}-${endHour}`
     const dateLabel = `${sDay} ${monthLabel} • ${hourLabel}`
 

@@ -45,7 +45,7 @@ export const authOptions: NextAuthOptions = {
 },
 };
 
-async function refreshAccessToken(token: any) {
+async function refreshAccessToken(token: any) { // TODO: check the logic 
   try {
     const url = 'https://oauth2.googleapis.com/token';
     const response = await fetch(url, {
