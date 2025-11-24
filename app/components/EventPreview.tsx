@@ -13,18 +13,22 @@ function IdentifyInfoBar({data= {}}:any) {
     if(!data) {
         return null;
     }
-    const start = data.start?.dateTime;
-    const end = data.end?.dateTime;
+    
+    const event = data.event || data;
+    const start = event.start?.dateTime;
+    const end = event.end?.dateTime;
     const date = toBasicIsoFormat(start,end);
 
      const operationType = data?.type; 
       switch(operationType){
 
         case EventPreviewTypes.EVENT: { // title, date , message 
+
+            const title = event.summary || event.title || 'Untitled Event';
             
             return <div className="flex flex-col">
-                    <span className="text-lg font-semibold text-gray-900">{data.title}</span>
-                    <span className="text-sm text-gray-600">{date}</span> {/*place holder for date, for now*/}
+                    <span className="text-lg font-semibold text-gray-900">{title}</span>
+                    <span className="text-sm text-gray-600">{date}</span>
                    </div>
         }
         case EventPreviewTypes.EVENTS: { // title, date but list format, message 
@@ -53,25 +57,11 @@ function IdentifyInfoBar({data= {}}:any) {
       } 
 }
 
-function normalizeDate(dateObj:any): Date | null {
-    if(!dateObj) return null;
-
-    if(dateObj.dateTime) {
-        return new Date(dateObj.dateTime);
-    }
-
-    if(dateObj.date) {
-        return new Date(dateObj + "T00:00:00")
-    }
-
-    return null;
-
-}
-
 function toBasicIsoFormat(startTime: string|Date, endTime: string|Date) { 
-    {/*convert RC3339 complex date format to basic date format. 2025-11-09T09:00:00Z -> Ex: "Fri, 19 Oct 2025 * 09.00-14.00" */}
-    const start= normalizeDate(startTime);
-    const end= normalizeDate(endTime); // 19 Nov • 09.00 - 14.00 for now.
+    // Convert RC3339 complex date format to basic date format. 2025-11-09T09:00:00Z -> Ex: "Fri, 19 Oct 2025 * 09.00-14.00"
+    // Handle both string dates and Date objects directly
+    const start = startTime instanceof Date ? startTime : (startTime ? new Date(startTime) : null);
+    const end = endTime instanceof Date ? endTime : (endTime ? new Date(endTime) : null);
     
       if (!start || !end || isNaN(start.getTime()) || isNaN(end.getTime())) {
         console.warn("Invalid Google Calendar date:", { startTime, endTime });
