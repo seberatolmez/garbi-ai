@@ -46,20 +46,35 @@ function IdentifyInfoBar({data= {}}:any) {
         case EventPreviewTypes.DISAMBIGUATION: // return message
         {
             return <div className="flex flex-col">
-                    <span className="text-lg font-semibold text-gray-900">{data.message}</span>
+                    <span className="font-semibold text-gray-900">{data.message}</span>
             </div>
         }
 
       } 
 }
 
-function toBasicIsoFormat(startTime: string|Date,endTime: string|Date) { 
+function normalizeDate(dateObj:any): Date | null {
+    if(!dateObj) return null;
+
+    if(dateObj.dateTime) {
+        return new Date(dateObj.dateTime);
+    }
+
+    if(dateObj.date) {
+        return new Date(dateObj + "T00:00:00")
+    }
+
+    return null;
+
+}
+
+function toBasicIsoFormat(startTime: string|Date, endTime: string|Date) { 
     {/*convert RC3339 complex date format to basic date format. 2025-11-09T09:00:00Z -> Ex: "Fri, 19 Oct 2025 * 09.00-14.00" */}
-    const start= new Date(startTime);
-    const end= new Date(endTime);  // 19 Nov • 09.00 - 14.00 for now.
+    const start= normalizeDate(startTime);
+    const end= normalizeDate(endTime); // 19 Nov • 09.00 - 14.00 for now.
     
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-        console.warn("Invalid date format received:", { startTime, endTime });
+      if (!start || !end || isNaN(start.getTime()) || isNaN(end.getTime())) {
+        console.warn("Invalid Google Calendar date:", { startTime, endTime });
         return "-";
     }
     
