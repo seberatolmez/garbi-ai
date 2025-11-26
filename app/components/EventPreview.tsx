@@ -71,9 +71,11 @@ function toBasicIsoFormat(startTime: string|Date, endTime: string|Date) {
     const sMonth= start.getMonth();
     const sDay= start.getDate();
     const sHour= start.getHours();
+    const sMinutes=start.getMinutes();
 
     
     const endHour=end.getHours();
+    const endMinutes=end.getMinutes();
 
     const months= ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
     const monthLabel= months[sMonth]
@@ -90,7 +92,7 @@ function toBasicIsoFormat(startTime: string|Date, endTime: string|Date) {
         sDay === now.getDate()+1 &&
         sMonth === now.getMonth()    //: edge-case: last day of month
 
-    const hourLabel = `${String(sHour).padStart(2, "0")}-${String(endHour).padStart(2, "0")}`; // TODO: do parsing it outside above 
+    const hourLabel = `${String(sHour).padStart(2, "0")}.${sMinutes}-${String(endHour).padStart(2, "0")}.${endMinutes}`; // TODO: do parsing it outside above 
     const dateLabel = `${sDay} ${monthLabel} • ${hourLabel}`
 
     if(isToday) {
