@@ -72,7 +72,7 @@ function toBasicIsoFormat(startTime: string|Date, endTime: string|Date) {
     const sDay= start.getDate();
     const sHour= start.getHours();
     const sMinutes=start.getMinutes();
-    const refMinutes = sMinutes==0 ? '00' : sMinutes; 
+    const refMinutes = sMinutes<10 ? '0'+sMinutes : sMinutes; 
 
     
     const endHour=end.getHours();
@@ -116,7 +116,7 @@ export function EventPreview({ data = {} }: any) {
     }
 
     return(
-        <div className="w-full max-w-md border rounded-2xl shadow p-4 bg-white">
+        <div className="border rounded-2xl shadow p-4 bg-white">
       {/* Header */}
       <div className="flex items-center gap-2 border-b pb-2 mb-3">
         <Image

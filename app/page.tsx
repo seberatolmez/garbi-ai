@@ -66,7 +66,7 @@ export default function AskGarbi() {
   }
 
   return (
-    <div className="flex flex-col items-center w-full max-w-3xl mx-auto mt-8 px-6 flex-grow">
+    <div className="flex flex-col items-stretch w-full max-w-3xl mx-auto mt-8 px-6 flex-grow">
       <h1 className="text-2xl font-bold mb-2">
         Welcome back{session?.user?.name ? `, ${session.user.name}` : ""} 👋
       </h1>
@@ -103,7 +103,7 @@ export default function AskGarbi() {
              </div>
            )}
            
-             <div className="mt-4 p-4">
+             <div className="mt-4 p-4 w-full">
                {data && <EventPreview data={data}/>}
              </div>
 
