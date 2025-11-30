@@ -1,6 +1,5 @@
 // calendar service to commit events, update events, delete events, etc.
 
-import { time } from 'console';
 import { google, calendar_v3 } from 'googleapis';
 
 const CLIENT_ID = process.env.CLIENT_ID;

@@ -37,8 +37,8 @@ function IdentifyInfoBar({data= {}}:any) {
                     <div className="flex flex-col gap-2">
                         {events.map((event: any, i: number) => (
                         <div className="flex flex-col" key={i}>
-                            <span className="text-lg font-semibold text-gray-900">{event.title}</span>
-                            <span className="text-sm text-gray-600">{event.message}</span>
+                            <span className="text-lg font-semibold text-gray-900">{event.summary}</span>
+                            <span className="text-sm text-gray-600">{toBasicIsoFormat(event.start.dateTime,event.end.dateTime)}</span>
                         </div>
                         ))}
                     </div>
