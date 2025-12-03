@@ -44,8 +44,10 @@ export async function POST(request: NextRequest) {
 
     try {
       const result = await handleUserPrompt(prompt.trim(), session.accessToken, timeZone);
+      
+      // Return result directly - can be a single object or array of objects
       return NextResponse.json(
-        { success: true, ...result },
+        result,
         { status: 200 }
       );
     } catch (error) {
