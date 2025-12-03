@@ -277,6 +277,8 @@ Example: If user says "schedule tennis tomorrow at 8am for 1.5 hours" (and today
       ]
     });
 
+
+
     const functionCalls = result.response.functionCalls();
 
     console.log('Function calls received:', JSON.stringify(functionCalls, null, 2));
@@ -286,14 +288,14 @@ Example: If user says "schedule tennis tomorrow at 8am for 1.5 hours" (and today
       console.log('No function calls, returning text response:', text);
       return { type: "text", message: text };
     }
-
-    const functionCall = functionCalls[0];
-    const { name, args } = functionCall;
-    const argsTyped = args as any;
     
-    console.log(`Calling function: ${name}`, 'with args:', JSON.stringify(argsTyped, null, 2));
+    functionCalls.forEach(async(functionCall) => { 
+      const {name,args} = functionCall;
+      const argsTyped = args as any; 
+      console.log(`Calling function: ${name}`, 'with args:', JSON.stringify(argsTyped, null, 2));
 
-    switch (name) {
+
+       switch (name) {
       case "listEvents": {
         const maxResults = argsTyped.maxResults || 10;
         const timeMin = argsTyped.timeMin as string | undefined;
@@ -465,6 +467,11 @@ Example: If user says "schedule tennis tomorrow at 8am for 1.5 hours" (and today
       default:
         throw new Error(`Unknown tool: ${name}`);
     }
+      
+    });
+    
+    
+  
   } catch (error) {
     console.error('Error handling user prompt:', error);
     throw error;
