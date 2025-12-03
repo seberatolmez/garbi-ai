@@ -110,27 +110,62 @@ function toBasicIsoFormat(startTime: string|Date, endTime: string|Date) {
 }
 
 export function EventPreview({ data = {} }: any) { 
-
-    const operationType = data?.type;
-    if(!operationType) {
+    // Normalize data to array format for consistent handling
+    const operations = Array.isArray(data) ? data : [data];
+    
+    // Filter out invalid operations
+    const validOperations = operations.filter((op: any) => op?.type);
+    
+    if(validOperations.length === 0) {
         return null;
     }
+
+    const isMultiple = validOperations.length > 1;
 
     return(
         <div className="border rounded-2xl shadow p-4 bg-white">
       {/* Header */}
-      <div className="flex items-center gap-2 border-b pb-2 mb-3">
-        <Image
-            src={"/google-calendar-logo.png"} 
-            alt={"Google Calendar Logo"}
-            width={40}
-            height={40}
-        />
-        <span className="font-medium text-gray-800">Google Calendar</span>
+      <div className="flex items-center justify-between border-b pb-2 mb-3">
+        <div className="flex items-center gap-2">
+          <Image
+              src={"/google-calendar-logo.png"} 
+              alt={"Google Calendar Logo"}
+              width={40}
+              height={40}
+          />
+          <span className="font-medium text-gray-800">Google Calendar</span>
+        </div>
+        {isMultiple && (
+          <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+            {validOperations.length} {validOperations.length === 1 ? 'operation' : 'operations'}
+          </span>
+        )}
       </div>
 
-      {/* Info Bar */}
-     <IdentifyInfoBar data={data}/>
+      {/* Operations List */}
+      <div className="flex flex-col">
+        {validOperations.map((operation: any, index: number) => (
+          <div key={index} className={isMultiple && index < validOperations.length - 1 ? "pb-4" : ""}>
+            {/* Operation Separator */}
+            {isMultiple && index > 0 && (
+              <div className="flex items-center gap-3 mb-4 -mt-1">
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center">
+                    <span className="text-xs font-semibold text-gray-600">{index + 1}</span>
+                  </div>
+                </div>
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+              </div>
+            )}
+            
+            {/* Info Bar for each operation */}
+            <div className={isMultiple ? "pl-2 border-l-2 border-gray-100" : ""}>
+              <IdentifyInfoBar data={operation}/>
+            </div>
+          </div>
+        ))}
+      </div>
         
     </div>
     );
