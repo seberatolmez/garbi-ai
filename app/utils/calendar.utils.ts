@@ -1,5 +1,5 @@
 import { calendar_v3 } from 'googleapis';
-import { CalendarEvent } from '@/app/components/EventCard';
+import { CalendarEvent } from '../types/types';
 
 /**
  * Transforms a Google Calendar event (calendar_v3.Schema$Event) to CalendarEvent format

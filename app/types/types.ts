@@ -19,6 +19,54 @@ declare module 'next-auth' {
   }
 }
 
+export type CalendarView = "day" | "week" | "month";
+
+export interface CalendarHeaderProps {
+  currentDate: Date;
+  onDateChange: (date: Date) => void;
+  view: CalendarView;
+  onViewChange: (view: CalendarView) => void;
+}
+
+export interface CalendarGridProps {
+  currentDate: Date;
+  events: CalendarEvent[];
+  onEventClick?: (event: CalendarEvent) => void;
+  view: CalendarView;
+}
+
+export interface CalendarEvent {  // move away and reuse in other places
+  id: string;
+  title: string;
+  startTime: string;
+  endTime: string;
+  date?: string;
+  colorId: string // between 1-11
+  description?: string;
+}
+
+export interface EventCardProps {
+  event: CalendarEvent;
+  onClick?: () => void; // Optional click handler
+}
+
+// Utility: Calculate event position and dimensions
+export interface EventPosition {
+  top: number; // pixels from top of day container
+  height: number; // height in pixels
+  startMinutes: number; // minutes from midnight
+  endMinutes: number; // minutes from midnight
+}
+
+
+// Utility: Group overlapping events and calculate horizontal positions
+export interface PositionedEvent {
+  event: CalendarEvent;
+  position: EventPosition;
+  left: number; // percentage from left
+  width: number; // percentage width
+}
+
 
 
 

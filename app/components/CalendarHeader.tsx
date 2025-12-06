@@ -5,17 +5,10 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChevronLeft, ChevronRight, CalendarIcon } from "lucide-react";
-import { format, addWeeks, subWeeks, addDays, subDays, addYears, subYears, subMonths, addMonths } from "date-fns";
+import { format, addWeeks, subWeeks, addDays, subDays, subMonths, addMonths } from "date-fns";
+import { CalendarHeaderProps, CalendarView } from "../types/types";
 import { cn } from "@/lib/utils";
 
-export type CalendarView = "day" | "week" | "month";
-
-interface CalendarHeaderProps {
-  currentDate: Date;
-  onDateChange: (date: Date) => void;
-  view: CalendarView;
-  onViewChange: (view: CalendarView) => void;
-}
 
 export default function CalendarHeader({ currentDate, onDateChange, view, onViewChange }: CalendarHeaderProps) {
   const handlePrev = () => {

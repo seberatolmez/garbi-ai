@@ -1,15 +1,9 @@
 
 import { addDays, format, getDaysInMonth, isSameDay, startOfMonth, startOfWeek } from "date-fns";
-import EventCard, { CalendarEvent } from "./EventCard";
+import EventCard from "./EventCard";
+import { CalendarEvent, CalendarGridProps, EventPosition, PositionedEvent } from "../types/types";
 import { cn } from "@/lib/utils";
-import { CalendarView } from "./CalendarHeader";
 
-interface CalendarGridProps {
-  currentDate: Date;
-  events: CalendarEvent[];
-  onEventClick?: (event: CalendarEvent) => void;
-  view: CalendarView;
-}
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const WEEK_DAYS = Array.from({ length: 7 }, (_, i) => i);
@@ -21,13 +15,6 @@ function parseTimeToMinutes(timeStr: string): number {
   return hours * 60 + (minutes || 0);
 }
 
-// Utility: Calculate event position and dimensions
-interface EventPosition {
-  top: number; // pixels from top of day container
-  height: number; // height in pixels
-  startMinutes: number; // minutes from midnight
-  endMinutes: number; // minutes from midnight
-}
 
 function calculateEventPosition(event: CalendarEvent): EventPosition {
   const startMinutes = parseTimeToMinutes(event.startTime);
@@ -47,13 +34,6 @@ function eventsOverlap(event1: EventPosition, event2: EventPosition): boolean {
   return !(event1.endMinutes <= event2.startMinutes || event2.endMinutes <= event1.startMinutes);
 }
 
-// Utility: Group overlapping events and calculate horizontal positions
-interface PositionedEvent {
-  event: CalendarEvent;
-  position: EventPosition;
-  left: number; // percentage from left
-  width: number; // percentage width
-}
 
 function calculateOverlappingPositions(events: CalendarEvent[]): PositionedEvent[] {
   if (events.length === 0) return [];

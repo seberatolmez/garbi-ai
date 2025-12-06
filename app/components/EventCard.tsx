@@ -1,23 +1,11 @@
 
 
 import { cn } from "@/lib/utils";
+import { EventCardProps } from "../types/types";
 import { COLORS } from "../types/colors";
 import React from "react";
 
-export interface CalendarEvent {  // move away and reuse in other places
-  id: string;
-  title: string;
-  startTime: string;
-  endTime: string;
-  date?: string;
-  colorId: string // between 1-11
-  description?: string;
-}
 
-interface EventCardProps {
-  event: CalendarEvent;
-  onClick?: () => void; // Optional click handler
-}
 
 export default function EventCard({ event, onClick }: EventCardProps) {
 
