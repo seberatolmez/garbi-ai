@@ -11,8 +11,6 @@ interface CalendarGridProps {
   view: CalendarView;
 }
 
-const HOURS = Array.from({ length: 24 }, (_, i) => i);
-const WEEK_DAYS = Array.from({ length: 7 }, (_, i) => i);
 const HOUR_ROW_HEIGHT = 60; // Height in pixels for each hour row
 
 // Utility: Parse time string (HH:mm) to total minutes from midnight
