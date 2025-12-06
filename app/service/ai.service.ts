@@ -277,6 +277,8 @@ Example: If user says "schedule tennis tomorrow at 8am for 1.5 hours" (and today
       ]
     });
 
+
+
     const functionCalls = result.response.functionCalls();
 
     console.log('Function calls received:', JSON.stringify(functionCalls, null, 2));
@@ -286,185 +288,198 @@ Example: If user says "schedule tennis tomorrow at 8am for 1.5 hours" (and today
       console.log('No function calls, returning text response:', text);
       return { type: "text", message: text };
     }
-
-    const functionCall = functionCalls[0];
-    const { name, args } = functionCall;
-    const argsTyped = args as any;
     
-    console.log(`Calling function: ${name}`, 'with args:', JSON.stringify(argsTyped, null, 2));
+    // Process all function calls in parallel and collect results
+    const results = await Promise.all(
+      functionCalls.map(async (functionCall) => { 
+        const {name,args} = functionCall;
+        const argsTyped = args as any; 
+        console.log(`Calling function: ${name}`, 'with args:', JSON.stringify(argsTyped, null, 2));
 
-    switch (name) {
-      case "listEvents": {
-        const maxResults = argsTyped.maxResults || 10;
-        const timeMin = argsTyped.timeMin as string | undefined;
-        const timeMax = argsTyped.timeMax as string | undefined;
-        const events = await calendarService.listEvents(accessToken, maxResults, timeMax, timeMin);
-        return { type: "events", events };
-      }
-      case "createEvent": {
-        try {
-          // Use user's timezone if AI didn't provide one
-          const eventTimeZone = argsTyped.timeZone || userTimeZone || 'UTC';
-          
-          // Build event object from function arguments
-          const eventData = {
-            summary: argsTyped.summary || 'Untitled Event',
-            description: argsTyped.description || '',
-            location: argsTyped.location || '',
-            colorId: argsTyped.colorId,
-            start: {
-              dateTime: argsTyped.startDateTime,
-              timeZone: eventTimeZone
-            },
-            end: {
-              dateTime: argsTyped.endDateTime,
-              timeZone: eventTimeZone
-            }
-          };
-
-          console.log('Creating event with data:', JSON.stringify(eventData, null, 2));
-
-          if (!eventData.start.dateTime || !eventData.end.dateTime) {
-            throw new Error('Missing required fields: startDateTime and endDateTime are required');
+        switch (name) {
+          case "listEvents": {
+            const maxResults = argsTyped.maxResults || 10;
+            const timeMin = argsTyped.timeMin as string | undefined;
+            const timeMax = argsTyped.timeMax as string | undefined;
+            const events = await calendarService.listEvents(accessToken, maxResults, timeMax, timeMin);
+            return { type: "events", events };
           }
+          case "createEvent": {
+            try {
+              // Use user's timezone if AI didn't provide one
+              const eventTimeZone = argsTyped.timeZone || userTimeZone || 'UTC';
+              
+              // Build event object from function arguments
+              const eventData = {
+                summary: argsTyped.summary || 'Untitled Event',
+                description: argsTyped.description || '',
+                location: argsTyped.location || '',
+                colorId: argsTyped.colorId,
+                start: {
+                  dateTime: argsTyped.startDateTime,
+                  timeZone: eventTimeZone
+                },
+                end: {
+                  dateTime: argsTyped.endDateTime,
+                  timeZone: eventTimeZone
+                }
+              };
 
-          const result = await calendarService.createEvent(accessToken, eventData);
-          console.log('Event created successfully:', result.event?.id);
-          return { type: "event", event: result.event, message: result.message };
-        } catch (error) {
-          console.error('Error in createEvent case:', error);
-          throw error;
-        }
-      }
-      case "updateEvent": {
-        try {
-          let eventId = (argsTyped.eventId as string | undefined)?.trim();
-          
-          if (!eventId) {
+              console.log('Creating event with data:', JSON.stringify(eventData, null, 2));
+
+              if (!eventData.start.dateTime || !eventData.end.dateTime) {
+                throw new Error('Missing required fields: startDateTime and endDateTime are required');
+              }
+
+              const result = await calendarService.createEvent(accessToken, eventData);
+              console.log('Event created successfully:', result.event?.id);
+              return { type: "event", event: result.event, message: result.message };
+            } catch (error) {
+              console.error('Error in createEvent case:', error);
+              throw error;
+            }
+          }
+          case "updateEvent": {
+            try {
+              let eventId = (argsTyped.eventId as string | undefined)?.trim();
+              
+              if (!eventId) {
+                const q = (argsTyped.q as string | undefined)?.trim();
+                const date = (argsTyped.date as string | undefined)?.trim();
+                
+                if (!q && !date) {
+                  throw new Error('Either eventId or search criteria (q/date) must be provided');
+                }
+
+                const candidates = await calendarService.findEventsByQuery(accessToken, {
+                  q,
+                  date,
+                  maxLookAheadDays: 30
+                });
+
+                if (candidates.length === 0) {
+                  return {
+                    type: "text",
+                    message: "No events found matching the criteria to update."
+                  };
+                }
+                
+                if (candidates.length > 1) {
+                  return {
+                    type: "disambiguation",
+                    message: "Multiple matching events found. Please choose which to update.",
+                    candidates: candidates.map(event => ({
+                      id: event.id,
+                      summary: event.summary,
+                      start: event.start?.dateTime,
+                      end: event.end?.dateTime,
+                    }))
+                  };
+                }
+
+                eventId = candidates[0].id!;
+              }
+
+              if (!eventId) {
+                throw new Error('Event ID is required to update event');
+              }
+
+              // Fetch existing event to merge changes
+              const existingEvent = await calendarService.getEventById(accessToken, eventId);
+              
+              // Build updated event data from function arguments
+              const updatedEventData: any = {};
+              
+              if (argsTyped.summary !== undefined) updatedEventData.summary = argsTyped.summary;
+              if (argsTyped.description !== undefined) updatedEventData.description = argsTyped.description;
+              if (argsTyped.location !== undefined) updatedEventData.location = argsTyped.location;
+              if (argsTyped.startDateTime) {
+                updatedEventData.start = {
+                  dateTime: argsTyped.startDateTime,
+                  timeZone: argsTyped.timeZone || userTimeZone || existingEvent.start?.timeZone || 'UTC'
+                };
+              }
+              if (argsTyped.endDateTime) {
+                updatedEventData.end = {
+                  dateTime: argsTyped.endDateTime,
+                  timeZone: argsTyped.timeZone || userTimeZone || existingEvent.end?.timeZone || 'UTC'
+                };
+              }
+              
+              // Merge: updatedEventData overrides existingEvent fields
+              const mergedEvent = {
+                ...existingEvent,
+                ...updatedEventData,
+                id: existingEvent.id,
+                etag: existingEvent.etag,
+              };
+
+              console.log('Updating event with data:', JSON.stringify(mergedEvent, null, 2));
+
+              const result = await calendarService.updateEvent(accessToken, eventId, mergedEvent);
+              console.log('Event updated successfully:', result.event?.id);
+              return { type: "event", event: result.event, message: result.message };
+            } catch (error) {
+              console.error('Error in updateEvent case:', error);
+              throw error;
+            }
+          }
+          case "deleteEvent": {
+            const eventId = (argsTyped.eventId as string | undefined)?.trim();
+            if(eventId) {
+              const result = await calendarService.deleteEvent(accessToken, argsTyped.eventId);
+              return { type: "success", message: result.message };
+            }
+
             const q = (argsTyped.q as string | undefined)?.trim();
             const date = (argsTyped.date as string | undefined)?.trim();
-            
-            if (!q && !date) {
-              throw new Error('Either eventId or search criteria (q/date) must be provided');
-            }
 
-            const candidates = await calendarService.findEventsByQuery(accessToken, {
-              q,
-              date,
-              maxLookAheadDays: 30
-            });
+            const candidates = await calendarService.findEventsByQuery(accessToken,
+               {q,date, maxLookAheadDays: 30}
+            );
 
-            if (candidates.length === 0) {
+            if(candidates.length === 0) {
               return {
                 type: "text",
-                message: "No events found matching the criteria to update."
+                message: "No events found matching the criteria to delete."
               };
+
             }
-            
-            if (candidates.length > 1) {
-              return {
-                type: "disambiguation",
-                message: "Multiple matching events found. Please choose which to update.",
-                candidates: candidates.map(event => ({
-                  id: event.id,
-                  summary: event.summary,
-                  start: event.start?.dateTime,
-                  end: event.end?.dateTime,
-                }))
-              };
+            // if only one candidate
+            if(candidates.length === 1) {
+              const deletedEventId = candidates[0].id!;
+              const result = await calendarService.deleteEvent(accessToken,deletedEventId);
+              return { type: "success", message: result.message, deletedEventId: deletedEventId };
             }
 
-            eventId = candidates[0].id!;
+            // if multiple candidates, for now delete just one
+            return {
+              type: "disambiguation",
+              message: "Multiple matching events found. Please choose which to delete.",
+              candidates: candidates.map(event => ({ // mapping these 4 fields
+                id: event.id,
+                summary: event.summary,
+                start: event.start?.dateTime,
+                end: event.end?.dateTime,
+              }))
+            }
+
           }
-
-          if (!eventId) {
-            throw new Error('Event ID is required to update event');
-          }
-
-          // Fetch existing event to merge changes
-          const existingEvent = await calendarService.getEventById(accessToken, eventId);
-          
-          // Build updated event data from function arguments
-          const updatedEventData: any = {};
-          
-          if (argsTyped.summary !== undefined) updatedEventData.summary = argsTyped.summary;
-          if (argsTyped.description !== undefined) updatedEventData.description = argsTyped.description;
-          if (argsTyped.location !== undefined) updatedEventData.location = argsTyped.location;
-          if (argsTyped.startDateTime) {
-            updatedEventData.start = {
-              dateTime: argsTyped.startDateTime,
-              timeZone: argsTyped.timeZone || userTimeZone || existingEvent.start?.timeZone || 'UTC'
-            };
-          }
-          if (argsTyped.endDateTime) {
-            updatedEventData.end = {
-              dateTime: argsTyped.endDateTime,
-              timeZone: argsTyped.timeZone || userTimeZone || existingEvent.end?.timeZone || 'UTC'
-            };
-          }
-          
-          // Merge: updatedEventData overrides existingEvent fields
-          const mergedEvent = {
-            ...existingEvent,
-            ...updatedEventData,
-            id: existingEvent.id,
-            etag: existingEvent.etag,
-          };
-
-          console.log('Updating event with data:', JSON.stringify(mergedEvent, null, 2));
-
-          const result = await calendarService.updateEvent(accessToken, eventId, mergedEvent);
-          console.log('Event updated successfully:', result.event?.id);
-          return { type: "event", event: result.event, message: result.message };
-        } catch (error) {
-          console.error('Error in updateEvent case:', error);
-          throw error;
+          default:
+            throw new Error(`Unknown tool: ${name}`);
         }
-      }
-      case "deleteEvent": {
-        const eventId = (argsTyped.eventId as string | undefined)?.trim();
-        if(eventId) {
-          const result = await calendarService.deleteEvent(accessToken, argsTyped.eventId);
-          return { type: "success", message: result.message };
-        }
+      })
+    );
 
-        const q = (argsTyped.q as string | undefined)?.trim();
-        const date = (argsTyped.date as string | undefined)?.trim();
-
-        const candidates = await calendarService.findEventsByQuery(accessToken,
-           {q,date, maxLookAheadDays: 30}
-        );
-
-        if(candidates.length === 0) {
-          return {
-            type: "text",
-            message: "No events found matching the criteria to delete."
-          };
-
-        }
-        // if only one candidate
-        if(candidates.length === 1) {
-          const deletedEventId = candidates[0].id!;
-          const result = await calendarService.deleteEvent(accessToken,deletedEventId);
-          return { type: "success", message: result.message, deletedEventId: deletedEventId };
-        }
-
-        // if multiple candidates, for now delete just one
-        return {
-          type: "disambiguation",
-          message: "Multiple matching events found. Please choose which to delete.",
-          candidates: candidates.map(event => ({ // mapping these 4 fields
-            id: event.id,
-            summary: event.summary,
-            start: event.start?.dateTime,
-            end: event.end?.dateTime,
-          }))
-        }
-
-      }
-      default:
-        throw new Error(`Unknown tool: ${name}`);
+    // Return single result if only one operation, array if multiple
+    if (results.length === 1) {
+      return results[0];
     }
+    
+    return results;
+    
+    
+  
   } catch (error) {
     console.error('Error handling user prompt:', error);
     throw error;
