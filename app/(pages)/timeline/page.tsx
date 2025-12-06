@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect } from "react";
-import CalendarHeader, { CalendarView } from "@/app/components/CalendarHeader";
+import CalendarHeader from "@/app/components/CalendarHeader";
+import { CalendarView } from "@/app/types/types";
 import CalendarGrid from "@/app/components/CalendarGrid";
-import { CalendarEvent } from "@/app/components/EventCard";
-import { transformGoogleEventsToCalendarEvents } from "@/app/utils/calendar.utils";
+import { CalendarEvent } from "@/app/types/types";
+import { transformGoogleEventsToCalendarEvents } from "@/app/utils/calendar-event.utils";
 
 export default function TimelinePage() {
   const [currentDate, setCurrentDate] = useState(new Date());
