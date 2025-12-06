@@ -16,7 +16,7 @@ export interface CalendarEvent {  // move away and reuse in other places
 
 interface EventCardProps {
   event: CalendarEvent;
-  onClick?: () => void;
+  onClick?: () => void; // Optional click handler
 }
 
 export default function EventCard({ event, onClick }: EventCardProps) {

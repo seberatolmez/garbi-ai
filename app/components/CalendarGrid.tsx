@@ -13,6 +13,127 @@ interface CalendarGridProps {
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const WEEK_DAYS = Array.from({ length: 7 }, (_, i) => i);
+const HOUR_ROW_HEIGHT = 60; // Height in pixels for each hour row
+
+// Utility: Parse time string (HH:mm) to total minutes from midnight
+function parseTimeToMinutes(timeStr: string): number {
+  const [hours, minutes] = timeStr.split(":").map(Number);
+  return hours * 60 + (minutes || 0);
+}
+
+// Utility: Calculate event position and dimensions
+interface EventPosition {
+  top: number; // pixels from top of day container
+  height: number; // height in pixels
+  startMinutes: number; // minutes from midnight
+  endMinutes: number; // minutes from midnight
+}
+
+function calculateEventPosition(event: CalendarEvent): EventPosition {
+  const startMinutes = parseTimeToMinutes(event.startTime);
+  const endMinutes = parseTimeToMinutes(event.endTime);
+  const durationMinutes = endMinutes - startMinutes;
+  
+  // Calculate top position: (minutes / 60) * hourRowHeight
+  const top = (startMinutes / 60) * HOUR_ROW_HEIGHT;
+  // Calculate height: (duration in minutes / 60) * hourRowHeight
+  const height = (durationMinutes / 60) * HOUR_ROW_HEIGHT;
+  
+  return { top, height, startMinutes, endMinutes };
+}
+
+// Utility: Check if two events overlap
+function eventsOverlap(event1: EventPosition, event2: EventPosition): boolean {
+  return !(event1.endMinutes <= event2.startMinutes || event2.endMinutes <= event1.startMinutes);
+}
+
+// Utility: Group overlapping events and calculate horizontal positions
+interface PositionedEvent {
+  event: CalendarEvent;
+  position: EventPosition;
+  left: number; // percentage from left
+  width: number; // percentage width
+}
+
+function calculateOverlappingPositions(events: CalendarEvent[]): PositionedEvent[] {
+  if (events.length === 0) return [];
+  
+  // Calculate positions for all events
+  const eventsWithPositions = events.map(event => ({
+    event,
+    position: calculateEventPosition(event)
+  }));
+  
+  // Sort by start time, then by duration (longer first for better column assignment)
+  eventsWithPositions.sort((a, b) => {
+    if (a.position.startMinutes !== b.position.startMinutes) {
+      return a.position.startMinutes - b.position.startMinutes;
+    }
+    return b.position.endMinutes - a.position.endMinutes;
+  });
+  
+  // Assign columns using a greedy algorithm
+  const columns: (typeof eventsWithPositions)[] = [];
+  const eventToColumn = new Map<typeof eventsWithPositions[0], number>();
+  
+  for (const eventWithPos of eventsWithPositions) {
+    // Find the first column where this event doesn't overlap with existing events
+    let columnIndex = -1;
+    for (let i = 0; i < columns.length; i++) {
+      const columnEvents = columns[i];
+      const noOverlap = columnEvents.every(existing =>
+        !eventsOverlap(eventWithPos.position, existing.position)
+      );
+      if (noOverlap) {
+        columnIndex = i;
+        break;
+      }
+    }
+    
+    // If no suitable column found, create a new one
+    if (columnIndex === -1) {
+      columnIndex = columns.length;
+      columns.push([]);
+    }
+    
+    columns[columnIndex].push(eventWithPos);
+    eventToColumn.set(eventWithPos, columnIndex);
+  }
+  
+  // Calculate positions for each event
+  const result: PositionedEvent[] = [];
+  const gap = 1; // 1% gap between events
+  
+  for (const eventWithPos of eventsWithPositions) {
+    const columnIndex = eventToColumn.get(eventWithPos)!;
+    
+    // Find all events that overlap with this event at any point
+    const overlappingEvents = eventsWithPositions.filter(other =>
+      eventsOverlap(eventWithPos.position, other.position)
+    );
+    
+    // Find the maximum column index used by overlapping events
+    const maxColumnIndex = Math.max(
+      ...overlappingEvents.map(e => eventToColumn.get(e)!)
+    );
+    
+    // Calculate how many columns are needed for this overlap group
+    const numColumns = maxColumnIndex + 1;
+    
+    // Calculate width and left position
+    const width = (100 / numColumns) - gap;
+    const left = (columnIndex / numColumns) * 100 + (gap / 2);
+    
+    result.push({
+      event: eventWithPos.event,
+      position: eventWithPos.position,
+      left,
+      width
+    });
+  }
+  
+  return result;
+}
 
 export default function CalendarGrid({ currentDate, events, onEventClick, view }: CalendarGridProps) {
   const today = new Date();
@@ -34,17 +155,17 @@ function WeekView({ currentDate, events, onEventClick, today }: { currentDate: D
   const HOURS = Array.from({ length: 24 }, (_, i) => i);
   const WEEK_DAYS = Array.from({ length: 7 }, (_, i) => i);
 
-  const getEventsForDayAndHour = (day: number, hour: number) => {
+  // Get events for each day
+  const getEventsForDay = (day: number) => {
     const targetDate = addDays(weekStart, day);
     return events.filter(event => {
-      const [eventHour] = event.startTime.split(":").map(Number);
       // If the event has a date field (ISO YYYY-MM-DD), compare it to the targetDate.
       if (event.date) {
         const eventDate = new Date(event.date + "T00:00:00");
-        return isSameDay(eventDate, targetDate) && eventHour === hour;
+        return isSameDay(eventDate, targetDate);
       }
       // Fallback: if no date provided, assume events belong to the currently selected date.
-      return isSameDay(currentDate, targetDate) && eventHour === hour;
+      return isSameDay(currentDate, targetDate);
     });
   };
 
@@ -83,40 +204,72 @@ function WeekView({ currentDate, events, onEventClick, today }: { currentDate: D
           })}
         </div>
 
-        {/* Time grid */}
-        <div className="relative">
+        {/* Time grid with events container */}
+        <div className="relative" style={{ height: `${24 * HOUR_ROW_HEIGHT}px` }}>
+          {/* Hour rows */}
           {HOURS.map((hour) => (
-            <div key={hour} className="grid grid-cols-8 border-b border-border min-h-[40px]">
+            <div
+              key={hour}
+              className="grid grid-cols-8 border-b border-border"
+              style={{ height: `${HOUR_ROW_HEIGHT}px` }}
+            >
               <div className="p-4 text-sm text-calendar-time font-medium">
                 {format(new Date().setHours(hour, 0), "HH:mm")}
               </div>
               {WEEK_DAYS.map((day) => {
                 const date = addDays(weekStart, day);
                 const isToday = isSameDay(date, today);
-                const dayEvents = getEventsForDayAndHour(day, hour);
-                
                 return (
                   <div
                     key={`${day}-${hour}`}
                     className={cn(
-                      "p-2 border-l border-border transition-colors hover:bg-calendar-grid/50",
+                      "border-l border-border transition-colors hover:bg-calendar-grid/50 relative",
                       isToday && "bg-blue-500/5"
                     )}
-                  >
-                    <div className="space-y-1">
-                      {dayEvents.map((event) => (
-                        <EventCard
-                          key={event.id}
-                          event={event}
-                          onClick={() => onEventClick?.(event)}
-                        />
-                      ))}
-                    </div>
-                  </div>
+                  />
                 );
               })}
             </div>
           ))}
+
+          {/* Events containers for each day - absolutely positioned */}
+          {WEEK_DAYS.map((day) => {
+            const dayEvents = getEventsForDay(day);
+            const positionedEvents = calculateOverlappingPositions(dayEvents);
+            // Grid has 8 columns: 1 for time (12.5%), 7 for days (each 12.5%)
+            // Day columns start at index 1, so left = (day + 1) / 8 * 100
+            const leftOffset = ((day + 1) / 8) * 100;
+            const dayWidth = (1 / 8) * 100; // Each day column is 1/8 of total width
+
+            return (
+              <div
+                key={day}
+                className="absolute top-0 bottom-0"
+                style={{
+                  left: `${leftOffset}%`,
+                  width: `${dayWidth}%`,
+                }}
+              >
+                {positionedEvents.map(({ event, position, left, width }) => (
+                  <div
+                    key={event.id}
+                    className="absolute px-1"
+                    style={{
+                      top: `${position.top}px`,
+                      left: `${left}%`,
+                      width: `${width}%`,
+                      height: `${Math.max(position.height, 20)}px`, // Minimum height of 20px
+                    }}
+                  >
+                    <EventCard
+                      event={event}
+                      onClick={() => onEventClick?.(event)}
+                    />
+                  </div>
+                ))}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
@@ -128,74 +281,86 @@ function DayView({ currentDate, events, onEventClick, today }: { currentDate: Da
   const HOURS = Array.from({ length: 24 }, (_, i) => i);
   const isToday = isSameDay(currentDate, today);
 
-  const getEventsForHour = (hour: number) => {
-    return events.filter(event => {
-      const [eventHour] = event.startTime.split(":").map(Number);
-      // If event has a date, compare event date with currentDate; otherwise treat it as belonging to currentDate
-      if (event.date) {
-        const eventDate = new Date(event.date + "T00:00:00");
-        return isSameDay(eventDate, currentDate) && eventHour === hour;
-      }
-      return eventHour === hour;
-    });
-  };
+  // Filter events for the current day
+  const dayEvents = events.filter(event => {
+    if (event.date) {
+      const eventDate = new Date(event.date + "T00:00:00");
+      return isSameDay(eventDate, currentDate);
+    }
+    // Fallback: if no date provided, assume events belong to the currently selected date
+    return true;
+  });
+
+  // Calculate positions for all events with overlap handling
+  const positionedEvents = calculateOverlappingPositions(dayEvents);
 
   return (
-  <div className="flex-1 overflow-auto">
-  <div className="min-w-[600px] grid grid-cols-[150px_1fr]">
-
-    {/* HEADER */}
-    <div className="col-span-2 grid grid-cols-[100px_1fr] border-b border-border sticky top-0 bg-card z-10">
-      <div className="p-4 text-sm font-medium text-muted-foreground">Time</div>
-      <div className={cn(
-        "p-4 text-center border-l border-border",
-        isToday && "bg-blue-500/5"
-      )}>
-        <div className="text-sm font-medium text-muted-foreground">
-          {format(currentDate, "EEEE")}
-        </div>
-        <div className={cn(
-          "text-2xl font-semibold mt-1",
-          isToday ? "text-primary" : "text-foreground"
-        )}>
-          {format(currentDate, "d")}
-        </div>
-      </div>
-    </div>
-
-    {/* ROWS */}
-    {HOURS.map((hour) => (
-      <div
-        key={hour}
-        className="col-span-2 grid grid-cols-[100px_1fr] border-b border-border min-h-[40px]"
-      >
-        <div className="p-4 text-sm text-calendar-time font-medium">
-          {format(new Date().setHours(hour, 0), "HH:mm")}
-        </div>
-
-        <div
-          className={cn(
-            "p-2 border-l border-border transition-colors hover:bg-calendar-grid/50",
+    <div className="flex-1 overflow-auto">
+      <div className="min-w-[600px] grid grid-cols-[150px_1fr]">
+        {/* HEADER */}
+        <div className="col-span-2 grid grid-cols-[100px_1fr] border-b border-border sticky top-0 bg-card z-10">
+          <div className="p-4 text-sm font-medium text-muted-foreground">Time</div>
+          <div className={cn(
+            "p-4 text-center border-l border-border",
             isToday && "bg-blue-500/5"
-          )}
-        >
-          <div className="space-y-1">
-            {getEventsForHour(hour).map((event) => (
-              <EventCard
-                key={event.id}
-                event={event}
-                onClick={() => onEventClick?.(event)}
+          )}>
+            <div className="text-sm font-medium text-muted-foreground">
+              {format(currentDate, "EEEE")}
+            </div>
+            <div className={cn(
+              "text-2xl font-semibold mt-1",
+              isToday ? "text-primary" : "text-foreground"
+            )}>
+              {format(currentDate, "d")}
+            </div>
+          </div>
+        </div>
+
+        {/* Time grid with events container */}
+        <div className="col-span-2 relative" style={{ height: `${24 * HOUR_ROW_HEIGHT}px` }}>
+          {/* Hour rows */}
+          {HOURS.map((hour) => (
+            <div
+              key={hour}
+              className="grid grid-cols-[100px_1fr] border-b border-border"
+              style={{ height: `${HOUR_ROW_HEIGHT}px` }}
+            >
+              <div className="p-4 text-sm text-calendar-time font-medium">
+                {format(new Date().setHours(hour, 0), "HH:mm")}
+              </div>
+              <div
+                className={cn(
+                  "border-l border-border transition-colors hover:bg-calendar-grid/50 relative",
+                  isToday && "bg-blue-500/5"
+                )}
               />
+            </div>
+          ))}
+
+          {/* Events container - absolutely positioned */}
+          <div className="absolute top-0 left-[100px] right-0 bottom-0">
+            {positionedEvents.map(({ event, position, left, width }) => (
+              <div
+                key={event.id}
+                className="absolute px-1"
+                style={{
+                  top: `${position.top}px`,
+                  left: `${left}%`,
+                  width: `${width}%`,
+                  height: `${Math.max(position.height, 20)}px`, // Minimum height of 20px
+                }}
+              >
+                <EventCard
+                  event={event}
+                  onClick={() => onEventClick?.(event)}
+                />
+              </div>
             ))}
           </div>
         </div>
       </div>
-    ))}
-
-  </div>
-</div>
-);
-
+    </div>
+  );
 }
 
 // Month View Component
