@@ -3,12 +3,11 @@ import { addDays, format, getDaysInMonth, isSameDay, startOfMonth, startOfWeek }
 import EventCard from "./EventCard";
 import { CalendarEvent, CalendarGridProps} from "../types/types";
 import { cn } from "@/lib/utils";
-import {calculateOverlappingPositions} from "../utils/calendar-grid.utils";
+import { calculateOverlappingPositions, HOUR_ROW_HEIGHT } from "../utils/calendar-grid.utils";
 
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const WEEK_DAYS = Array.from({ length: 7 }, (_, i) => i);
-const HOUR_ROW_HEIGHT = 60; // Height in pixels for each hour row
 
 
 export default function CalendarGrid({ currentDate, events, onEventClick, view }: CalendarGridProps) {
@@ -80,31 +79,58 @@ function WeekView({ currentDate, events, onEventClick, today }: { currentDate: D
 
         {/* Time grid with events container */}
         <div className="relative" style={{ height: `${24 * HOUR_ROW_HEIGHT}px` }}>
-          {/* Hour rows */}
-          {HOURS.map((hour) => (
-            <div
-              key={hour}
-              className="grid grid-cols-8 border-b border-border"
-              style={{ height: `${HOUR_ROW_HEIGHT}px` }}
-            >
-              <div className="p-4 text-sm text-calendar-time font-medium">
-                {format(new Date().setHours(hour, 0), "HH:mm")}
-              </div>
-              {WEEK_DAYS.map((day) => {
-                const date = addDays(weekStart, day);
-                const isToday = isSameDay(date, today);
-                return (
-                  <div
-                    key={`${day}-${hour}`}
-                    className={cn(
-                      "border-l border-border transition-colors hover:bg-calendar-grid/50 relative",
-                      isToday && "bg-blue-500/5"
-                    )}
-                  />
-                );
-              })}
-            </div>
-          ))}
+          {/* Hour lines - positioned at exact hour marks (0px, 60px, 120px, etc.) */}
+          {HOURS.map((hour) => {
+            const topPosition = hour * HOUR_ROW_HEIGHT;
+            return (
+              <div
+                key={`hour-line-${hour}`}
+                className="absolute left-0 right-0 border-t border-border"
+                style={{ top: `${topPosition}px` }}
+              />
+            );
+          })}
+          
+          {/* Hour labels - positioned at exact hour line positions */}
+          <div className="absolute left-0 top-0 bottom-0" style={{ width: '12.5%' }}>
+            {HOURS.map((hour) => {
+              const topPosition = hour * HOUR_ROW_HEIGHT;
+              return (
+                <div
+                  key={`hour-label-${hour}`}
+                  className="absolute text-sm text-calendar-time font-medium pr-2 text-right"
+                  style={{ 
+                    top: `${topPosition}px`,
+                    right: '8px',
+                    transform: 'translateY(-50%)'
+                  }}
+                >
+                  {format(new Date().setHours(hour, 0), "HH:mm")}
+                </div>
+              );
+            })}
+          </div>
+          
+          {/* Day columns - background grid */}
+          {WEEK_DAYS.map((day) => {
+            const date = addDays(weekStart, day);
+            const isToday = isSameDay(date, today);
+            const leftOffset = ((day + 1) / 8) * 100;
+            const dayWidth = (1 / 8) * 100;
+            return (
+              <div
+                key={`day-bg-${day}`}
+                className={cn(
+                  "absolute top-0 bottom-0 border-l border-border transition-colors hover:bg-calendar-grid/50",
+                  isToday && "bg-blue-500/5"
+                )}
+                style={{
+                  left: `${leftOffset}%`,
+                  width: `${dayWidth}%`,
+                }}
+              />
+            );
+          })}
 
           {/* Events containers for each day - absolutely positioned */}
           {WEEK_DAYS.map((day) => {
@@ -124,15 +150,16 @@ function WeekView({ currentDate, events, onEventClick, today }: { currentDate: D
                   width: `${dayWidth}%`,
                 }}
               >
-                {positionedEvents.map(({ event, position, left, width }) => (
+                {positionedEvents.map(({ event, position, left, width }, index) => (
                   <div
                     key={event.id}
-                    className="absolute px-1"
+                    className="absolute px-1 z-10"
                     style={{
                       top: `${position.top}px`,
                       left: `${left}%`,
                       width: `${width}%`,
                       height: `${Math.max(position.height, 20)}px`, // Minimum height of 20px
+                      zIndex: 10 + index, // Ensure events have proper stacking order
                     }}
                   >
                     <EventCard
@@ -191,28 +218,48 @@ function DayView({ currentDate, events, onEventClick, today }: { currentDate: Da
 
         {/* Time grid with events container */}
         <div className="col-span-2 relative" style={{ height: `${24 * HOUR_ROW_HEIGHT}px` }}>
-          {/* Hour rows */}
-          {HOURS.map((hour) => (
-            <div
-              key={hour}
-              className="grid grid-cols-[100px_1fr] border-b border-border"
-              style={{ height: `${HOUR_ROW_HEIGHT}px` }}
-            >
-              <div className="p-4 text-sm text-calendar-time font-medium">
-                {format(new Date().setHours(hour, 0), "HH:mm")}
-              </div>
+          {/* Hour lines - positioned at exact hour marks (0px, 60px, 120px, etc.) */}
+          {HOURS.map((hour) => {
+            const topPosition = hour * HOUR_ROW_HEIGHT;
+            return (
               <div
-                className={cn(
-                  "border-l border-border transition-colors hover:bg-calendar-grid/50 relative",
-                  isToday && "bg-blue-500/5"
-                )}
+                key={`hour-line-${hour}`}
+                className="absolute left-0 right-0 border-t border-border"
+                style={{ top: `${topPosition}px` }}
               />
-            </div>
-          ))}
+            );
+          })}
+          
+          {/* Hour labels - positioned at exact hour line positions */}
+          <div className="absolute left-0 top-0 bottom-0 w-[100px]">
+            {HOURS.map((hour) => {
+              const topPosition = hour * HOUR_ROW_HEIGHT;
+              return (
+                <div
+                  key={`hour-label-${hour}`}
+                  className="absolute text-sm text-calendar-time font-medium pr-2"
+                  style={{ 
+                    top: `${topPosition}px`,
+                    transform: 'translateY(-50%)'
+                  }}
+                >
+                  {format(new Date().setHours(hour, 0), "HH:mm")}
+                </div>
+              );
+            })}
+          </div>
+          
+          {/* Day column - background grid */}
+          <div
+            className={cn(
+              "absolute top-0 left-[100px] right-0 bottom-0 border-l border-border transition-colors hover:bg-calendar-grid/50",
+              isToday && "bg-blue-500/5"
+            )}
+          />
 
           {/* Events container - absolutely positioned */}
           <div className="absolute top-0 left-[100px] right-0 bottom-0">
-            {positionedEvents.map(({ event, position, left, width }) => (
+            {positionedEvents.map(({ event, position, left, width }, index) => (
               <div
                 key={event.id}
                 className="absolute px-1"
@@ -221,6 +268,7 @@ function DayView({ currentDate, events, onEventClick, today }: { currentDate: Da
                   left: `${left}%`,
                   width: `${width}%`,
                   height: `${Math.max(position.height, 20)}px`, // Minimum height of 20px
+                  zIndex: 10 + index, // Ensure events have proper stacking order
                 }}
               >
                 <EventCard
