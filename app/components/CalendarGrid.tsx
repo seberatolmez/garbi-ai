@@ -98,11 +98,10 @@ function WeekView({ currentDate, events, onEventClick, today }: { currentDate: D
               return (
                 <div
                   key={`hour-label-${hour}`}
-                  className="absolute text-sm text-calendar-time font-medium pr-2 text-right"
+                  className="absolute text-sm text-calendar-time text-muted-foreground font-medium pr-2 text-right"
                   style={{ 
                     top: `${topPosition}px`,
-                    right: '8px',
-                    transform: 'translateY(-50%)'
+                    right: '6px',
                   }}
                 >
                   {format(new Date().setHours(hour, 0), "HH:mm")}
@@ -237,10 +236,10 @@ function DayView({ currentDate, events, onEventClick, today }: { currentDate: Da
               return (
                 <div
                   key={`hour-label-${hour}`}
-                  className="absolute text-sm text-calendar-time font-medium pr-2"
+                  className="absolute text-sm text-calendar-time text-muted-foreground font-medium pr-2"
                   style={{ 
                     top: `${topPosition}px`,
-                    transform: 'translateY(-50%)'
+                    right: '6px',
                   }}
                 >
                   {format(new Date().setHours(hour, 0), "HH:mm")}
