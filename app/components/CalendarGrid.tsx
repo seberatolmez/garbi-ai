@@ -46,7 +46,7 @@ function WeekView({ currentDate, events, onEventClick, today }: { currentDate: D
     <div className="flex-1 overflow-auto">
       <div className="min-w-[800px]">
         {/* Days header */}
-        <div className="grid grid-cols-8 border-b border-border sticky top-0 bg-card z-10">
+        <div className="grid grid-cols-[100px_1fr_1fr_1fr_1fr_1fr_1fr_1fr] border-b border-border sticky top-0 bg-card z-10">
           <div className="p-4 text-sm font-medium text-muted-foreground">Time</div>
           {WEEK_DAYS.map((day) => {
             const date = addDays(weekStart, day);
@@ -92,7 +92,7 @@ function WeekView({ currentDate, events, onEventClick, today }: { currentDate: D
           })}
           
           {/* Hour labels - positioned at exact hour line positions */}
-          <div className="absolute left-0 top-0 bottom-0" style={{ width: '12.5%' }}>
+          <div className="absolute left-0 top-0 bottom-0 w-[100px]">
             {HOURS.map((hour) => {
               const topPosition = hour * HOUR_ROW_HEIGHT;
               return (
@@ -114,8 +114,6 @@ function WeekView({ currentDate, events, onEventClick, today }: { currentDate: D
           {WEEK_DAYS.map((day) => {
             const date = addDays(weekStart, day);
             const isToday = isSameDay(date, today);
-            const leftOffset = ((day + 1) / 8) * 100;
-            const dayWidth = (1 / 8) * 100;
             return (
               <div
                 key={`day-bg-${day}`}
@@ -124,8 +122,8 @@ function WeekView({ currentDate, events, onEventClick, today }: { currentDate: D
                   isToday && "bg-blue-500/5"
                 )}
                 style={{
-                  left: `${leftOffset}%`,
-                  width: `${dayWidth}%`,
+                  left: `calc(100px + ${day} * (100% - 100px) / 7)`,
+                  width: `calc((100% - 100px) / 7)`,
                 }}
               />
             );
@@ -135,18 +133,14 @@ function WeekView({ currentDate, events, onEventClick, today }: { currentDate: D
           {WEEK_DAYS.map((day) => {
             const dayEvents = getEventsForDay(day);
             const positionedEvents = calculateOverlappingPositions(dayEvents);
-            // Grid has 8 columns: 1 for time (12.5%), 7 for days (each 12.5%)
-            // Day columns start at index 1, so left = (day + 1) / 8 * 100
-            const leftOffset = ((day + 1) / 8) * 100;
-            const dayWidth = (1 / 8) * 100; // Each day column is 1/8 of total width
 
             return (
               <div
                 key={day}
                 className="absolute top-0 bottom-0"
                 style={{
-                  left: `${leftOffset}%`,
-                  width: `${dayWidth}%`,
+                  left: `calc(100px + ${day} * (100% - 100px) / 7)`,
+                  width: `calc((100% - 100px) / 7)`,
                 }}
               >
                 {positionedEvents.map(({ event, position, left, width }, index) => (
