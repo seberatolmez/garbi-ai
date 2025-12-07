@@ -1,111 +1,208 @@
-import { EventPosition,CalendarEvent, PositionedEvent } from "../types/types";
+import { EventPosition, CalendarEvent, PositionedEvent } from "../types/types";
 
-const HOUR_ROW_HEIGHT = 60; // Height in pixels for each hour row
+export const HOUR_ROW_HEIGHT = 60; // Height in pixels for each hour row
 
 // Utility: Parse time string (HH:mm) to total minutes from midnight
-function parseTimeToMinutes(timeStr: string): number {
-    const [hours, minutes] = timeStr.split(":").map(Number);
-    return hours * 60 + (minutes || 0);
-  }
+export function parseTimeToMinutes(timeStr: string): number {
+  const [hours, minutes] = timeStr.split(":").map(Number);
+  return hours * 60 + (minutes || 0);
+}
+
+/**
+ * Calculate event position based on start/end times
+ * Formula: top = (hours * HOUR_HEIGHT) + (minutes * HOUR_HEIGHT / 60)
+ * This is equivalent to: (startMinutes / 60) * HOUR_HEIGHT
+ */
+export function calculateEventPosition(event: CalendarEvent): EventPosition {
+  const startMinutes = parseTimeToMinutes(event.startTime);
+  const endMinutes = parseTimeToMinutes(event.endTime);
+  const durationMinutes = endMinutes - startMinutes;
   
+  // Calculate top position: (startMinutes / 60) * HOUR_ROW_HEIGHT
+  // Example: 10:15 = 615 minutes = 615/60 * 60 = 615px
+  const top = (startMinutes / 60) * HOUR_ROW_HEIGHT;
   
-function calculateEventPosition(event: CalendarEvent): EventPosition {
-    const startMinutes = parseTimeToMinutes(event.startTime);
-    const endMinutes = parseTimeToMinutes(event.endTime);
-    const durationMinutes = endMinutes - startMinutes;
-    
-    // Calculate top position: (minutes / 60) * hourRowHeight
-    const top = (startMinutes / 60) * HOUR_ROW_HEIGHT;
-    // Calculate height: (duration in minutes / 60) * hourRowHeight
-    const height = (durationMinutes / 60) * HOUR_ROW_HEIGHT;
-    
-    return { top, height, startMinutes, endMinutes };
-  }
+  // Calculate height: (duration in minutes / 60) * HOUR_ROW_HEIGHT
+  // Example: 90 minutes = 90/60 * 60 = 90px
+  const height = (durationMinutes / 60) * HOUR_ROW_HEIGHT;
   
-  // Utility: Check if two events overlap
-function eventsOverlap(event1: EventPosition, event2: EventPosition): boolean {
-    return !(event1.endMinutes <= event2.startMinutes || event2.endMinutes <= event1.startMinutes);
-  }
+  return { top, height, startMinutes, endMinutes };
+}
+
+/**
+ * Check if two events overlap in time
+ */
+export function eventsOverlap(event1: EventPosition, event2: EventPosition): boolean {
+  return !(event1.endMinutes <= event2.startMinutes || event2.endMinutes <= event1.startMinutes);
+}
+
+/**
+ * Detect overlapping event groups
+ * Groups events that intersect with each other at any point
+ */
+export function detectOverlappingEvents(events: CalendarEvent[]): Array<CalendarEvent[]> {
+  if (events.length === 0) return [];
   
+  const eventsWithPositions = events.map(event => ({
+    event,
+    position: calculateEventPosition(event)
+  }));
   
-function calculateOverlappingPositions(events: CalendarEvent[]): PositionedEvent[] {
-    if (events.length === 0) return [];
+  const groups: Array<CalendarEvent[]> = [];
+  const processed = new Set<CalendarEvent>();
+  
+  for (const { event, position } of eventsWithPositions) {
+    if (processed.has(event)) continue;
     
-    // Calculate positions for all events
-    const eventsWithPositions = events.map(event => ({
-      event,
-      position: calculateEventPosition(event)
-    }));
+    // Find all events that overlap with this event (directly or indirectly)
+    const group: CalendarEvent[] = [event];
+    processed.add(event);
     
-    // Sort by start time, then by duration (longer first for better column assignment)
-    eventsWithPositions.sort((a, b) => {
-      if (a.position.startMinutes !== b.position.startMinutes) {
-        return a.position.startMinutes - b.position.startMinutes;
-      }
-      return b.position.endMinutes - a.position.endMinutes;
-    });
-    
-    // Assign columns using a greedy algorithm
-    const columns: (typeof eventsWithPositions)[] = [];
-    const eventToColumn = new Map<typeof eventsWithPositions[0], number>();
-    
-    for (const eventWithPos of eventsWithPositions) {
-      // Find the first column where this event doesn't overlap with existing events
-      let columnIndex = -1;
-      for (let i = 0; i < columns.length; i++) {
-        const columnEvents = columns[i];
-        const noOverlap = columnEvents.every(existing =>
-          !eventsOverlap(eventWithPos.position, existing.position)
-        );
-        if (noOverlap) {
-          columnIndex = i;
-          break;
+    let foundNew = true;
+    while (foundNew) {
+      foundNew = false;
+      for (const { event: otherEvent, position: otherPosition } of eventsWithPositions) {
+        if (processed.has(otherEvent)) continue;
+        
+        // Check if this event overlaps with any event in the current group
+        const overlapsWithGroup = group.some(e => {
+          const ePos = calculateEventPosition(e);
+          return eventsOverlap(ePos, otherPosition);
+        });
+        
+        if (overlapsWithGroup) {
+          group.push(otherEvent);
+          processed.add(otherEvent);
+          foundNew = true;
         }
       }
-      
-      // If no suitable column found, create a new one
-      if (columnIndex === -1) {
-        columnIndex = columns.length;
-        columns.push([]);
-      }
-      
-      columns[columnIndex].push(eventWithPos);
-      eventToColumn.set(eventWithPos, columnIndex);
     }
     
-    // Calculate positions for each event
-    const result: PositionedEvent[] = [];
-    const gap = 1; // 1% gap between events
-    
-    for (const eventWithPos of eventsWithPositions) {
-      const columnIndex = eventToColumn.get(eventWithPos)!;
-      
-      // Find all events that overlap with this event at any point
-      const overlappingEvents = eventsWithPositions.filter(other =>
-        eventsOverlap(eventWithPos.position, other.position)
-      );
-      
-      // Find the maximum column index used by overlapping events
-      const maxColumnIndex = Math.max(
-        ...overlappingEvents.map(e => eventToColumn.get(e)!)
-      );
-      
-      // Calculate how many columns are needed for this overlap group
-      const numColumns = maxColumnIndex + 1;
-      
-      // Calculate width and left position
-      const width = (100 / numColumns) - gap;
-      const left = (columnIndex / numColumns) * 100 + (gap / 2);
-      
-      result.push({
-        event: eventWithPos.event,
-        position: eventWithPos.position,
-        left,
-        width
-      });
-    }
-    
-    return result;
+    groups.push(group);
   }
   
-  export {calculateOverlappingPositions,parseTimeToMinutes,calculateEventPosition,eventsOverlap};
+  return groups;
+}
+
+/**
+ * Calculate layout for overlapping events within a group
+ * Assigns column indices and calculates width/left positions
+ */
+export function calculateEventLayout(eventGroup: CalendarEvent[]): Array<{ event: CalendarEvent; left: number; width: number; columnIndex: number }> {
+  if (eventGroup.length === 0) return [];
+  
+  const eventsWithPositions = eventGroup.map(event => ({
+    event,
+    position: calculateEventPosition(event)
+  }));
+  
+  // Sort by start time, then by duration (longer first for better column assignment)
+  eventsWithPositions.sort((a, b) => {
+    if (a.position.startMinutes !== b.position.startMinutes) {
+      return a.position.startMinutes - b.position.startMinutes;
+    }
+    return b.position.endMinutes - a.position.endMinutes;
+  });
+  
+  // Assign columns using greedy algorithm
+  const columns: (typeof eventsWithPositions)[] = [];
+  const eventToColumn = new Map<typeof eventsWithPositions[0], number>();
+  
+  for (const eventWithPos of eventsWithPositions) {
+    // Find the first column where this event doesn't overlap with existing events
+    let columnIndex = -1;
+    for (let i = 0; i < columns.length; i++) {
+      const columnEvents = columns[i];
+      const noOverlap = columnEvents.every(existing =>
+        !eventsOverlap(eventWithPos.position, existing.position)
+      );
+      if (noOverlap) {
+        columnIndex = i;
+        break;
+      }
+    }
+    
+    // If no suitable column found, create a new one
+    if (columnIndex === -1) {
+      columnIndex = columns.length;
+      columns.push([]);
+    }
+    
+    columns[columnIndex].push(eventWithPos);
+    eventToColumn.set(eventWithPos, columnIndex);
+  }
+  
+  // Calculate width and left positions
+  const totalColumns = columns.length;
+  const gap = 1; // 1% gap between events
+  const padding = 0.5; // 0.5% padding on each side
+  
+  const result: Array<{ event: CalendarEvent; left: number; width: number; columnIndex: number }> = [];
+  
+  for (const eventWithPos of eventsWithPositions) {
+    const columnIndex = eventToColumn.get(eventWithPos)!;
+    
+    // Width: (100% - total padding) / totalColumns
+    const width = (100 - (padding * 2)) / totalColumns - gap;
+    
+    // Left: columnIndex * (width + gap) + padding
+    const left = (columnIndex * ((100 - (padding * 2)) / totalColumns)) + padding + (columnIndex * gap);
+    
+    result.push({
+      event: eventWithPos.event,
+      left,
+      width,
+      columnIndex
+    });
+  }
+  
+  return result;
+}
+
+/**
+ * Calculate overlapping positions for all events
+ * Main function that combines event positioning and overlap handling
+ */
+export function calculateOverlappingPositions(events: CalendarEvent[]): PositionedEvent[] {
+  if (events.length === 0) return [];
+  
+  // Calculate positions for all events
+  const eventsWithPositions = events.map(event => ({
+    event,
+    position: calculateEventPosition(event)
+  }));
+  
+  // Detect overlapping groups
+  const overlapGroups = detectOverlappingEvents(events);
+  
+  // Process each group separately
+  const result: PositionedEvent[] = [];
+  
+  for (const group of overlapGroups) {
+    if (group.length === 1) {
+      // Single event - no overlap, use full width
+      const event = group[0];
+      const position = calculateEventPosition(event);
+      result.push({
+        event,
+        position,
+        left: 1, // 1% padding
+        width: 98 // 98% width (1% padding on each side)
+      });
+    } else {
+      // Multiple overlapping events - calculate layout
+      const layouts = calculateEventLayout(group);
+      for (const { event, left, width } of layouts) {
+        const position = calculateEventPosition(event);
+        result.push({
+          event,
+          position,
+          left,
+          width
+        });
+      }
+    }
+  }
+  
+  return result;
+}
