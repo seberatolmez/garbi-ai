@@ -5,7 +5,7 @@ import { CalendarEvent, CalendarGridProps} from "../types/types";
 import { cn } from "@/lib/utils";
 import { calculateOverlappingPositions, HOUR_ROW_HEIGHT } from "../utils/calendar-grid.utils";
 import { CurrentTimeIndicator } from "./CurrentTimeIndicator";
-import { useState } from "react";
+import { useState, MouseEvent as ReactMouseEvent } from "react";
 import { EventDetailsPopover } from "./EventDetailsPopover";
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
@@ -13,13 +13,16 @@ const WEEK_DAYS = Array.from({ length: 7 }, (_, i) => i);
 const CONTAINER_HEIGHT = 24 * HOUR_ROW_HEIGHT; // Total height for 24 hours
 
 
+type SelectedEvent = CalendarEvent & { position: { x: number; y: number } };
+
 export default function CalendarGrid({ currentDate, events, onEventClick, view }: CalendarGridProps) {
   const today = new Date();
-  const [selectedEvent, setSelectedEvent] = useState(null);
-  var mouseEvent : MouseEvent;
+  const [selectedEvent, setSelectedEvent] = useState<SelectedEvent | null>(null);
 
-  const handleEventClick = (event,mouseEvent) => {
-     const rect = mouseEvent.target.getBoundingClientRect();
+  const handleEventClick = (event: CalendarEvent, mouseEvent: ReactMouseEvent) => {
+     const target = mouseEvent.currentTarget as HTMLElement | null;
+     if (!target) return;
+     const rect = target.getBoundingClientRect();
 
      const position = {
          x: rect.right + 10,
@@ -30,6 +33,7 @@ export default function CalendarGrid({ currentDate, events, onEventClick, view }
       ...event,
       position
      })
+     onEventClick?.(event, mouseEvent);
   }
 
   const deleteHandler = () => {
@@ -37,19 +41,34 @@ export default function CalendarGrid({ currentDate, events, onEventClick, view }
      setSelectedEvent(null);
   }
 
+  const closePopover = () => setSelectedEvent(null);
+
+  let viewContent;
   if (view === "day") {
-    return <DayView currentDate={currentDate} events={events} onEventClick={onEventClick} today={today} />;
+    viewContent = <DayView currentDate={currentDate} events={events} onEventClick={handleEventClick} today={today} />;
+  } else if (view === "month") {
+    viewContent = <MonthView currentDate={currentDate} events={events} onEventClick={handleEventClick} today={today} />;
+  } else {
+    viewContent = <WeekView currentDate={currentDate} events={events} onEventClick={handleEventClick} today={today} />;
   }
 
-  if (view === "month") {
-    return <MonthView currentDate={currentDate} events={events} onEventClick={onEventClick} today={today} />;
-  }
-
-  return <WeekView currentDate={currentDate} events={events} onEventClick={onEventClick} today={today} />;
+  return (
+    <>
+      {viewContent}
+      {selectedEvent && (
+        <EventDetailsPopover
+          event={selectedEvent}
+          position={selectedEvent.position}
+          onClose={closePopover}
+          onDelete={deleteHandler}
+        />
+      )}
+    </>
+  );
 }
 
 // Week View Component
-function WeekView({ currentDate, events, onEventClick, today }: { currentDate: Date; events: CalendarEvent[]; onEventClick?: (event: CalendarEvent) => void; today: Date }) {
+function WeekView({ currentDate, events, onEventClick, today }: { currentDate: Date; events: CalendarEvent[]; onEventClick?: (event: CalendarEvent, mouseEvent: ReactMouseEvent) => void; today: Date }) {
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
 
   // Get events for each day
@@ -183,7 +202,7 @@ function WeekView({ currentDate, events, onEventClick, today }: { currentDate: D
                     <EventCard
                       key={event.id}
                       event={event}
-                      onClick={() => handleEventClick(event,e)}
+                      onClick={(clickedEvent, e) => onEventClick?.(clickedEvent, e)}
                     />
                   </div>
                 ))}
@@ -202,7 +221,7 @@ function WeekView({ currentDate, events, onEventClick, today }: { currentDate: D
 }
 
 // Day View Component
-function DayView({ currentDate, events, onEventClick, today }: { currentDate: Date; events: CalendarEvent[]; onEventClick?: (event: CalendarEvent) => void; today: Date }) {
+function DayView({ currentDate, events, onEventClick, today }: { currentDate: Date; events: CalendarEvent[]; onEventClick?: (event: CalendarEvent, mouseEvent: ReactMouseEvent) => void; today: Date }) {
   const isToday = isSameDay(currentDate, today);
 
   // Filter events for the current day
@@ -297,7 +316,7 @@ function DayView({ currentDate, events, onEventClick, today }: { currentDate: Da
               >
                 <EventCard
                   event={event}
-                  onClick={() => handleEventClick(event,e)}
+                  onClick={(clickedEvent, e) => onEventClick?.(clickedEvent, e)}
                 />
               </div>
             ))}
@@ -313,7 +332,7 @@ function DayView({ currentDate, events, onEventClick, today }: { currentDate: Da
 
 // Month View Component
 function MonthView({currentDate,events,onEventClick, today}: 
-    {currentDate: Date; events: CalendarEvent[]; onEventClick?: (event: CalendarEvent) => void; today: Date}) {
+    {currentDate: Date; events: CalendarEvent[]; onEventClick?: (event: CalendarEvent, mouseEvent: ReactMouseEvent) => void; today: Date}) {
 
    const monthStart = startOfMonth(currentDate);
    const daysInMonth = getDaysInMonth(monthStart);
@@ -378,7 +397,7 @@ function MonthView({currentDate,events,onEventClick, today}:
                   {dayEvents.map((event) => (
                     <div
                       key={event.id}
-                      onClick={() => onEventClick?.(event)}
+                      onClick={(e) => onEventClick?.(event, e)}
                       className={cn(
                         "text-xs p-1 rounded cursor-pointer transition-all hover:scale-105",
                         `bg-calendar`,

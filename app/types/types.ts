@@ -1,4 +1,5 @@
 import nextAuth from 'next-auth';
+import { MouseEvent as ReactMouseEvent } from 'react';
 
 //auth types
 
@@ -31,7 +32,7 @@ export interface CalendarHeaderProps {
 export interface CalendarGridProps {
   currentDate: Date;
   events: CalendarEvent[];
-  onEventClick?: (event: CalendarEvent) => void;
+  onEventClick?: (event: CalendarEvent, mouseEvent: ReactMouseEvent) => void;
   view: CalendarView;
 }
 
@@ -47,7 +48,7 @@ export interface CalendarEvent {  // move away and reuse in other places
 
 export interface EventCardProps {
   event: CalendarEvent;
-  onClick?: () => void; // Optional click handler
+  onClick?: (event: CalendarEvent, mouseEvent: ReactMouseEvent) => void; // Optional click handler
 }
 
 // Utility: Calculate event position and dimensions
