@@ -22,7 +22,7 @@ export function CurrentTimeIndicator({containerHeight}: {containerHeight: number
 
     return (
         <div
-            className="absolute left-0 right-0 bg-color-red z-[999] h-0.5"
+            className="absolute left-25 right-0 bg-red-500 z-[999] h-0.75 rounded-r-xl"
             style={{ top: `${position}px` }}
         />
     )
