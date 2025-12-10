@@ -1,5 +1,5 @@
 
-import { addDays, format, getDaysInMonth, isSameDay, startOfMonth, startOfWeek } from "date-fns";
+import { addDays, format, getDaysInMonth, isSameDay, isToday, startOfMonth, startOfWeek } from "date-fns";
 import EventCard from "./EventCard";
 import { CalendarEvent, CalendarGridProps} from "../types/types";
 import { cn } from "@/lib/utils";
@@ -47,7 +47,7 @@ function WeekView({ currentDate, events, onEventClick, today }: { currentDate: D
     <div className="flex-1 overflow-auto">
       <div className="min-w-[800px]">
         {/* Days header */}
-        <div className="grid grid-cols-[100px_1fr_1fr_1fr_1fr_1fr_1fr_1fr] border-b border-border sticky top-0 bg-card z-[50]">
+        <div className="grid grid-cols-[100px_1fr_1fr_1fr_1fr_1fr_1fr_1fr] border-b border-border sticky top-0 bg-card z-[1000]">
           <div className="p-4 text-sm font-medium text-muted-foreground">Time</div>
           {WEEK_DAYS.map((day) => {
             const date = addDays(weekStart, day);
@@ -128,6 +128,7 @@ function WeekView({ currentDate, events, onEventClick, today }: { currentDate: D
                 }}
               />
             );
+
           })}
 
           {/* Events containers for each day - absolutely positioned */}
@@ -162,8 +163,13 @@ function WeekView({ currentDate, events, onEventClick, today }: { currentDate: D
                     />
                   </div>
                 ))}
+
+                {isSameDay(addDays(weekStart,day), today) && (
+                  <CurrentTimeIndicator containerHeight={CONTAINER_HEIGHT}/>
+                )}
               </div>
             );
+            
           })}
         </div>
       </div>
