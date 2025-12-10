@@ -47,7 +47,7 @@ function WeekView({ currentDate, events, onEventClick, today }: { currentDate: D
     <div className="flex-1 overflow-auto">
       <div className="min-w-[800px]">
         {/* Days header */}
-        <div className="grid grid-cols-[100px_1fr_1fr_1fr_1fr_1fr_1fr_1fr] border-b border-border sticky top-0 bg-card z-[1000]">
+        <div className="grid grid-cols-[100px_1fr_1fr_1fr_1fr_1fr_1fr_1fr] border-b border-border sticky top-0 bg-card z-[100]">
           <div className="p-4 text-sm font-medium text-muted-foreground">Time</div>
           {WEEK_DAYS.map((day) => {
             const date = addDays(weekStart, day);
