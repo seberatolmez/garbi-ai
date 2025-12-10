@@ -8,22 +8,13 @@ export function parseTimeToMinutes(timeStr: string): number {
   return hours * 60 + (minutes || 0);
 }
 
-/**
- * Calculate event position based on start/end times
- * Formula: top = (hours * HOUR_HEIGHT) + (minutes * HOUR_HEIGHT / 60)
- * This is equivalent to: (startMinutes / 60) * HOUR_HEIGHT
- */
 export function calculateEventPosition(event: CalendarEvent): EventPosition {
   const startMinutes = parseTimeToMinutes(event.startTime);
   const endMinutes = parseTimeToMinutes(event.endTime);
   const durationMinutes = endMinutes - startMinutes;
   
-  // Calculate top position: (startMinutes / 60) * HOUR_ROW_HEIGHT
-  // Example: 10:15 = 615 minutes = 615/60 * 60 = 615px
   const top = (startMinutes / 60) * HOUR_ROW_HEIGHT;
-  
-  // Calculate height: (duration in minutes / 60) * HOUR_ROW_HEIGHT
-  // Example: 90 minutes = 90/60 * 60 = 90px
+
   const height = (durationMinutes / 60) * HOUR_ROW_HEIGHT;
   
   return { top, height, startMinutes, endMinutes };
