@@ -9,8 +9,8 @@ import React from "react";
 
 export default function EventCard({ event, onClick }: EventCardProps) {
 
-  const colorId = parseInt(event.colorId,10);
-  const colorHex = COLORS[colorId].hex || COLORS[1].hex;
+  const colorId = parseInt(event.colorId, 10);
+  const colorHex = COLORS[colorId]?.hex || COLORS[1].hex;
   return (
     <div
       onClick={(e)=> onClick?.(event, e)}
