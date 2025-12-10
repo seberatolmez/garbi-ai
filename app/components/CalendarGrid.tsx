@@ -5,6 +5,8 @@ import { CalendarEvent, CalendarGridProps} from "../types/types";
 import { cn } from "@/lib/utils";
 import { calculateOverlappingPositions, HOUR_ROW_HEIGHT } from "../utils/calendar-grid.utils";
 import { CurrentTimeIndicator } from "./CurrentTimeIndicator";
+import { useState } from "react";
+import { EventDetailsPopover } from "./EventDetailsPopover";
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const WEEK_DAYS = Array.from({ length: 7 }, (_, i) => i);
@@ -13,6 +15,27 @@ const CONTAINER_HEIGHT = 24 * HOUR_ROW_HEIGHT; // Total height for 24 hours
 
 export default function CalendarGrid({ currentDate, events, onEventClick, view }: CalendarGridProps) {
   const today = new Date();
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  var mouseEvent : MouseEvent;
+
+  const handleEventClick = (event,mouseEvent) => {
+     const rect = mouseEvent.target.getBoundingClientRect();
+
+     const position = {
+         x: rect.right + 10,
+         y: rect.top + window.scrollY,
+     }
+
+     setSelectedEvent({
+      ...event,
+      position
+     })
+  }
+
+  const deleteHandler = () => {
+     // API Call here to delete
+     setSelectedEvent(null);
+  }
 
   if (view === "day") {
     return <DayView currentDate={currentDate} events={events} onEventClick={onEventClick} today={today} />;
@@ -158,8 +181,9 @@ function WeekView({ currentDate, events, onEventClick, today }: { currentDate: D
                     }}
                   >
                     <EventCard
+                      key={event.id}
                       event={event}
-                      onClick={() => onEventClick?.(event)}
+                      onClick={() => handleEventClick(event,e)}
                     />
                   </div>
                 ))}
@@ -273,7 +297,7 @@ function DayView({ currentDate, events, onEventClick, today }: { currentDate: Da
               >
                 <EventCard
                   event={event}
-                  onClick={() => onEventClick?.(event)}
+                  onClick={() => handleEventClick(event,e)}
                 />
               </div>
             ))}
