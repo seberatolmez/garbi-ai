@@ -4,11 +4,11 @@ import EventCard from "./EventCard";
 import { CalendarEvent, CalendarGridProps} from "../types/types";
 import { cn } from "@/lib/utils";
 import { calculateOverlappingPositions, HOUR_ROW_HEIGHT } from "../utils/calendar-grid.utils";
-import { useState } from "react";
+import { CurrentTimeIndicator } from "./CurrentTimeIndicator";
 
-const [indicatorPosition, setIndicatorPosition] = useState()
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const WEEK_DAYS = Array.from({ length: 7 }, (_, i) => i);
+const CONTAINER_HEIGHT = 24 * HOUR_ROW_HEIGHT; // Total height for 24 hours
 
 
 export default function CalendarGrid({ currentDate, events, onEventClick, view }: CalendarGridProps) {
@@ -272,6 +272,9 @@ function DayView({ currentDate, events, onEventClick, today }: { currentDate: Da
               </div>
             ))}
           </div>
+          {isToday && (
+            <CurrentTimeIndicator containerHeight={CONTAINER_HEIGHT}/>
+          )}
         </div>
       </div>
     </div>
