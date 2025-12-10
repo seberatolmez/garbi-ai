@@ -49,6 +49,17 @@ export function transformGoogleEventToCalendarEvent(
     date,
     colorId: colorId,
     description: googleEvent.description || undefined,
+    organizer: googleEvent.organizer ? {
+      displayName: googleEvent.organizer.displayName,
+      email: googleEvent.organizer.email,
+    } : undefined,
+    reminders: googleEvent.reminders ? {
+      overrides: googleEvent.reminders.overrides?.map(r => ({
+        method: r.method || 'email',
+        minutes: r.minutes || 0,
+      })),
+      useDefault: googleEvent.reminders.useDefault,
+    } : undefined,
   };
 }
 

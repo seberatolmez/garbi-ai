@@ -44,6 +44,17 @@ export interface CalendarEvent {  // move away and reuse in other places
   date?: string;
   colorId: string // between 1-11
   description?: string;
+  organizer?: {
+    displayName?: string;
+    email?: string;
+  };
+  reminders?: {
+    overrides?: Array<{
+      method: string;
+      minutes: number;
+    }>;
+    useDefault?: boolean;
+  };
 }
 
 export interface EventCardProps {
