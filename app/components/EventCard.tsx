@@ -9,11 +9,11 @@ import React from "react";
 
 export default function EventCard({ event, onClick }: EventCardProps) {
 
-  const colorId = parseInt(event.colorId,10);
-  const colorHex = COLORS[colorId].hex || COLORS[1].hex;
+  const colorId = parseInt(event.colorId, 10);
+  const colorHex = COLORS[colorId]?.hex || COLORS[1].hex;
   return (
     <div
-      onClick={onClick}
+      onClick={(e)=> onClick?.(event, e)}
       style={{backgroundColor: colorHex}}
       className="p-2 rounded-md border-l-4 border-blue-400 cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md text-background h-full overflow-hidden"
     >
