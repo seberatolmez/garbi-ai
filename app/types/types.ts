@@ -59,23 +59,23 @@ export interface CalendarEvent {
 
 export interface EventCardProps {
   event: CalendarEvent;
-  onClick?: (event: CalendarEvent, mouseEvent: ReactMouseEvent) => void; // Optional click handler
+  onClick?: (event: CalendarEvent, mouseEvent: ReactMouseEvent) => void; 
 }
 
-// Utility: Calculate event position and dimensions
+// Calculate event position and dimensions
 export interface EventPosition {
-  top: number; // pixels from top of day container
-  height: number; // height in pixels
-  startMinutes: number; // minutes from midnight
-  endMinutes: number; // minutes from midnight
+  top: number; 
+  height: number; 
+  startMinutes: number; 
+  endMinutes: number; 
 }
 
-// Utility: Group overlapping events and calculate horizontal positions
+// Group overlapping events and calculate horizontal positions
 export interface PositionedEvent {
   event: CalendarEvent;
   position: EventPosition;
-  left: number; // percentage from left
-  width: number; // percentage width
+  left: number; 
+  width: number; 
 }
 
 export interface EventDetailsPopoverProps {
