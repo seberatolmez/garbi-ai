@@ -1,17 +1,16 @@
-import nextAuth from 'next-auth';
-import { MouseEvent as ReactMouseEvent } from 'react';
+import nextAuth from "next-auth";
+import { MouseEvent as ReactMouseEvent } from "react";
 
 //auth types
 
-declare module 'next-auth' {
+declare module "next-auth" {
   interface Session {
     accessToken?: string;
     error?: string;
   }
 }
-  
 
-  declare module 'next-auth/jwt' {
+declare module "next-auth/jwt" {
   interface JWT {
     accessToken?: string;
     refreshToken?: string;
@@ -36,13 +35,14 @@ export interface CalendarGridProps {
   view: CalendarView;
 }
 
-export interface CalendarEvent {  // move away and reuse in other places
+export interface CalendarEvent {
+  // move away and reuse in other places
   id: string;
   title: string;
   startTime: string;
   endTime: string;
   date?: string;
-  colorId: string // between 1-11
+  colorId: string; // between 1-11
   description?: string;
   organizer?: {
     displayName?: string;
@@ -59,27 +59,28 @@ export interface CalendarEvent {  // move away and reuse in other places
 
 export interface EventCardProps {
   event: CalendarEvent;
-  onClick?: (event: CalendarEvent, mouseEvent: ReactMouseEvent) => void; // Optional click handler
+  onClick?: (event: CalendarEvent, mouseEvent: ReactMouseEvent) => void; 
 }
 
-// Utility: Calculate event position and dimensions
+// Calculate event position and dimensions
 export interface EventPosition {
-  top: number; // pixels from top of day container
-  height: number; // height in pixels
-  startMinutes: number; // minutes from midnight
-  endMinutes: number; // minutes from midnight
+  top: number; 
+  height: number; 
+  startMinutes: number; 
+  endMinutes: number; 
 }
 
-
-// Utility: Group overlapping events and calculate horizontal positions
+// Group overlapping events and calculate horizontal positions
 export interface PositionedEvent {
   event: CalendarEvent;
   position: EventPosition;
-  left: number; // percentage from left
-  width: number; // percentage width
+  left: number; 
+  width: number; 
 }
 
-
-
-
-
+export interface EventDetailsPopoverProps {
+  event: CalendarEvent & { position: { x: number; y: number } };
+  position: { x: number; y: number };
+  onClose: () => void;
+  onDelete: () => void;
+}

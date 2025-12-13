@@ -1,149 +1,92 @@
 // ai service to parsing and crud operations for calendar events
 
-import { FunctionDeclaration, GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import *as calendarService from "./calendar.service";
 import { COLORS } from "../types/colors";
 
 
-const calendarTools: FunctionDeclaration[] = [   // all calendar functions 
-        {
-            name: 'listEvents',
-            description: 'list upcoming events from user primary google calendar',
-            parameters: {
-                type: SchemaType.OBJECT,
-                properties: {
+const tools = [   // all calendar functions 
+           {
+              type: "function",
+              function: {
+                name: "listEvents",
+                description: "list upcoming events from user primary google calendar",
+                parameters: {
+                  type: "object",
+                  properties: {
                     maxResults: {
-                        type: SchemaType.INTEGER,
-                        description: 'maximum number of events to retrieve'
+                      type: "number",
+                      description: "maximum number of events to retrieve",
                     },
                     timeMin: {
-                        type: SchemaType.STRING,
-                        description: 'RFC3339 timestamp to list events starting from (inclusive)'
+                      type: "string",
+                      description: "RFC3339 timestamp to list events starting from (inclusive)",
                     },
                     timeMax: {
-                        type: SchemaType.STRING,
-                        description: 'RFC3339 timestamp to list events up to (inclusive)'
-                    } 
+                      type: "string",
+                      description: "RFC3339 timestamp to list events up to (inclusive)",
+                    },
+                  },
                 },
-                // no required if not specified, default '10'
-            }
-        },
-        {
-            name: 'createEvent',
-            description: 'create a new event in user primary google calendar',
-            parameters: {
-                type: SchemaType.OBJECT,
-                properties: {
-                    summary: {
-                        type: SchemaType.STRING,
-                        description: 'Event title/summary'
-                    },
-                    description: {
-                        type: SchemaType.STRING,
-                        description: 'Event description'
-                    },
-
-                    colorId: {
-                      type: SchemaType.STRING,
-                      description: 'Color ID for the event (optional, Google Calendar color IDs range from "1" to "11")'
-                    },
-
-                    location: {
-                        type: SchemaType.STRING,
-                        description: 'Event location'
-                    },
-                    startDateTime: {
-                        type: SchemaType.STRING,
-                        description: 'Start date and time in ISO 8601 format (YYYY-MM-DDTHH:mm:ss)'
-                    },
-                    endDateTime: {
-                        type: SchemaType.STRING,
-                        description: 'End date and time in ISO 8601 format (YYYY-MM-DDTHH:mm:ss)'
-                    },
-                    timeZone: {
-                        type: SchemaType.STRING,
-                        description: 'IANA time zone identifier (e.g., America/New_York, Europe/London)'
-                    }
+              },
+            },
+            {
+              type: "function",
+              function: {
+                name: "createEvent",
+                description: "create a new event in user primary google calendar",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    summary: { type: "string" },
+                    description: { type: "string" },
+                    colorId: { type: "string" },
+                    location: { type: "string" },
+                    startDateTime: { type: "string" },
+                    endDateTime: { type: "string" },
+                    timeZone: { type: "string" },
+                  },
+                  required: ["summary", "startDateTime", "endDateTime", "timeZone"],
                 },
-                required: ['summary', 'startDateTime', 'endDateTime', 'timeZone']
-            }
-        },
-        {
-            name: 'updateEvent',
-            description: 'update an existing event in user primary google calendar',
-            parameters: {
-                type: SchemaType.OBJECT,
-                properties: {
-                    eventId: {
-                        type: SchemaType.STRING,
-                        description: 'ID of the event to update'
-                    },
-                    q: {
-                        type: SchemaType.STRING,
-                        description: 'free-text search to find the event when ID is unknown (summary, description, location, attendees)'
-                    },
-                    date: {
-                        type: SchemaType.STRING,
-                        description: 'date of the event (YYYY-MM-DD) to narrow the search'
-                    },
-                    summary: {
-                        type: SchemaType.STRING,
-                        description: 'Updated event title/summary'
-                    },
-                    description: {
-                        type: SchemaType.STRING,
-                        description: 'Updated event description'
-                    },
-                    location: {
-                        type: SchemaType.STRING,
-                        description: 'Updated event location'
-                    },
-                    startDateTime: {
-                        type: SchemaType.STRING,
-                        description: 'Updated start date and time in ISO 8601 format (YYYY-MM-DDTHH:mm:ss)'
-                    },
-                    endDateTime: {
-                        type: SchemaType.STRING,
-                        description: 'Updated end date and time in ISO 8601 format (YYYY-MM-DDTHH:mm:ss)'
-                    },
-                    timeZone: {
-                        type: SchemaType.STRING,
-                        description: 'IANA time zone identifier (e.g., America/New_York, Europe/London)'
-                    }
-                }
-            }
-        },
-        {
-            name: 'deleteEvent',
-            description: 'delete an event from user primary google calendar',
-            parameters:  {
-              type: SchemaType.OBJECT,
-              properties: {
-                eventId: {
-                  type: SchemaType.STRING,
-                  description: 'ID of the event to delete'
+              },
+            },
+            {
+              type: "function",
+              function: {
+                name: "updateEvent",
+                description: "update an existing event in user primary google calendar",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    eventId: { type: "string" },
+                    q: { type: "string" },
+                    date: { type: "string" },
+                    summary: { type: "string" },
+                    description: { type: "string" },
+                    location: { type: "string" },
+                    startDateTime: { type: "string" },
+                    endDateTime: { type: "string" },
+                    timeZone: { type: "string" },
+                  },
                 },
-                q: {
-                  type: SchemaType.STRING,
-                  description: 'free-text search to find the event when ID is unknown (summary, description, location, attendees)'
+              },
+            },
+            {
+              type: "function",
+              function: {
+                name: "deleteEvent",
+                description: "delete an event from user primary google calendar",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    eventId: { type: "string" },
+                    q: { type: "string" },
+                    date: { type: "string" },
+                  },
                 },
-                date: {
-                  type: SchemaType.STRING,
-                  description: 'date of the event (YYYY-MM-DD) to narrow the search'
-                }
-              }
-            }
-        }
+              },
+            },
      ];
 
-const tools = [
-    {
-      functionDeclarations: calendarTools
-    },
-]
-
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY || '');
 const colors = COLORS;
 
 export async function handleUserPrompt(prompt: string, accessToken: string, userTimeZone?: string) {
@@ -267,10 +210,10 @@ CRITICAL:
           }
           case "createEvent": {
             try {
-              // Use user's timezone if AI didn't provide one
+              //user's timezone if AI didn't provide one
               const eventTimeZone = argsTyped.timeZone || userTimeZone || 'UTC';
               
-              // Build event object from function arguments
+              //event object from function arguments
               const eventData = {
                 summary: argsTyped.summary || 'Untitled Event',
                 description: argsTyped.description || '',

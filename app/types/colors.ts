@@ -1,7 +1,4 @@
-
-
 export const COLORS = {
-
   1: { name: "blue", hex: "#a4bdfc" },
   2: { name: "green", hex: "#7ae7bf" },
   3: { name: "purple", hex: "#dbadff" },
@@ -13,5 +10,4 @@ export const COLORS = {
   9: { name: "deep blue", hex: "#5484ed" },
   10: { name: "dark green", hex: "#51b749" },
   11: { name: "red", hex: "#dc2127" },
-
-}
+};
