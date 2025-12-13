@@ -154,9 +154,9 @@ DATE CONTEXT:
 - Tomorrow: ${tomorrowDate}
 - Timezone: ${timeZone}
 
-EVENT STRUCTURE:
+EVENT RULES:
 - summary (required for create), description, location (optional)
-- colorId: 1-11 (optional) with these colors: COLORS = ${JSON.stringify(colors)}
+- colorId: 1-11 , avaliable colors: ${JSON.stringify(colors)}
 - startDateTime/endDateTime: YYYY-MM-DDTHH:mm:ss (required)
 - timeZone: IANA identifier (required)
 
@@ -172,7 +172,11 @@ CRITICAL:
         {role: "system", content: systemInstruction},
         {role: "user", content: prompt}
       ],
-      tools: tools
+      tools: tools,
+      options: {
+        temperature: 0, // deterministic output for now
+        top_p: 0.9, 
+      }
     })
 
     const toolCalls = response.message.tool_calls;
@@ -380,5 +384,3 @@ CRITICAL:
   }
 }
 
-
-//TODO: avoid duplicate code, add reusable types and functions as needed 
