@@ -1,10 +1,10 @@
 // ai service to parsing and crud operations for calendar events
-
+import ollama from "ollama"
+import { Tool } from "ollama";
 import *as calendarService from "./calendar.service";
 import { COLORS } from "../types/colors";
 
-
-const tools = [   // all calendar functions 
+const tools : Tool[] = [   // all calendar functions 
            {
               type: "function",
               function: {
@@ -19,11 +19,11 @@ const tools = [   // all calendar functions
                     },
                     timeMin: {
                       type: "string",
-                      description: "RFC3339 timestamp to list events starting from (inclusive)",
+                      description: "RFC3339 datetime WITHOUT timezone. Format: YYYY-MM-DDTHH:mm:ss.",
                     },
                     timeMax: {
                       type: "string",
-                      description: "RFC3339 timestamp to list events up to (inclusive)",
+                      description: "RFC3339 datetime WITHOUT timezone. Format: YYYY-MM-DDTHH:mm:ss.",
                     },
                   },
                 },
@@ -41,9 +41,14 @@ const tools = [   // all calendar functions
                     description: { type: "string" },
                     colorId: { type: "string" },
                     location: { type: "string" },
-                    startDateTime: { type: "string" },
-                    endDateTime: { type: "string" },
-                    timeZone: { type: "string" },
+                    startDateTime: { 
+                      type: "string",
+                      description: "Local datetime WITHOUT timezone. Format: YYYY-MM-DDTHH:mm:ss" },
+                    endDateTime: { 
+                      type: "string",
+                      description: "Local datetime WITHOUT timezone. Format: YYYY-MM-DDTHH:mm:ss" },
+                    timeZone: {
+                       type: "string",description: "IANA time zone identifier, e.g., 'America/New_York'"},
                   },
                   required: ["summary", "startDateTime", "endDateTime", "timeZone"],
                 },
@@ -58,14 +63,14 @@ const tools = [   // all calendar functions
                   type: "object",
                   properties: {
                     eventId: { type: "string" },
-                    q: { type: "string" },
+                    q: { type: "string", description: "search query to find event(s) to update" },
                     date: { type: "string" },
                     summary: { type: "string" },
                     description: { type: "string" },
                     location: { type: "string" },
-                    startDateTime: { type: "string" },
-                    endDateTime: { type: "string" },
-                    timeZone: { type: "string" },
+                    startDateTime: { type: "string",description: "Local datetime WITHOUT timezone. Format: YYYY-MM-DDTHH:mm:ss"},
+                    endDateTime: { type: "string" ,description: "Local datetime WITHOUT timezone. Format: YYYY-MM-DDTHH:mm:ss"},
+                    timeZone: { type: "string", description: "IANA time zone identifier, e.g., 'America/New_York'"},
                   },
                 },
               },
@@ -78,8 +83,8 @@ const tools = [   // all calendar functions
                 parameters: {
                   type: "object",
                   properties: {
-                    eventId: { type: "string" },
-                    q: { type: "string" },
+                    eventId: { type: "string"},
+                    q: { type: "string" , description: "search query to find event(s) to delete" },
                     date: { type: "string" },
                   },
                 },
@@ -154,9 +159,9 @@ DATE CONTEXT:
 - Tomorrow: ${tomorrowDate}
 - Timezone: ${timeZone}
 
-EVENT STRUCTURE:
+EVENT RULES:
 - summary (required for create), description, location (optional)
-- colorId: 1-11 (optional)
+- colorId: 1-11 , avaliable colors: ${JSON.stringify(colors)}
 - startDateTime/endDateTime: YYYY-MM-DDTHH:mm:ss (required)
 - timeZone: IANA identifier (required)
 
@@ -166,38 +171,32 @@ CRITICAL:
 - Never use UTC or "Z" unless requested
 - For search, use 'q' and 'date' params instead of assuming IDs`;
 
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash',
+    const response = await ollama.chat({
+      model: "qwen2.5:7b-instruct",
+      messages: [
+        {role: "system", content: systemInstruction},
+        {role: "user", content: prompt}
+      ],
       tools: tools,
-      systemInstruction: systemInstruction
-    });
+      options: {
+        temperature: 0, // deterministic output for now
+        top_p: 0.9, 
+      }
+    })
 
-    const result = await model.generateContent({
-      contents: [
-        {
-          role: 'user',
-          parts: [{ text: prompt }]
-        }
-      ]
-    });
+    const toolCalls = response.message.tool_calls;
+    console.log('Tool calls received:', JSON.stringify(toolCalls, null, 2));
 
-
-
-    const functionCalls = result.response.functionCalls();
-
-    console.log('Function calls received:', JSON.stringify(functionCalls, null, 2));
-
-    if (!functionCalls || functionCalls.length === 0) {
-      const text = result.response.text();
+    if (!toolCalls || toolCalls.length === 0) {
+      const text = response.message.content || "I'm sorry, I couldn't process your request.";
       console.log('No function calls, returning text response:', text);
       return { type: "text", message: text };
     }
     
     // Process all function calls in parallel and collect results
     const results = await Promise.all(
-      functionCalls.map(async (functionCall) => { 
-        const {name,args} = functionCall;
-        const argsTyped = args as any; 
+      toolCalls.map(async (call) => { 
+        const {name,arguments:argsTyped} = call.function;
         console.log(`Calling function: ${name}`, 'with args:', JSON.stringify(argsTyped, null, 2));
 
         switch (name) {
@@ -390,5 +389,3 @@ CRITICAL:
   }
 }
 
-
-//TODO: avoid duplicate code, add reusable types and functions as needed 
