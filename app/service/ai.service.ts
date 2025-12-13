@@ -19,11 +19,11 @@ const tools : Tool[] = [   // all calendar functions
                     },
                     timeMin: {
                       type: "string",
-                      description: "RFC3339 timestamp to list events starting from (inclusive)",
+                      description: "RFC3339 datetime WITHOUT timezone. Format: YYYY-MM-DDTHH:mm:ss.",
                     },
                     timeMax: {
                       type: "string",
-                      description: "RFC3339 timestamp to list events up to (inclusive)",
+                      description: "RFC3339 datetime WITHOUT timezone. Format: YYYY-MM-DDTHH:mm:ss.",
                     },
                   },
                 },
@@ -41,9 +41,14 @@ const tools : Tool[] = [   // all calendar functions
                     description: { type: "string" },
                     colorId: { type: "string" },
                     location: { type: "string" },
-                    startDateTime: { type: "string" },
-                    endDateTime: { type: "string" },
-                    timeZone: { type: "string" },
+                    startDateTime: { 
+                      type: "string",
+                      description: "Local datetime WITHOUT timezone. Format: YYYY-MM-DDTHH:mm:ss" },
+                    endDateTime: { 
+                      type: "string",
+                      description: "Local datetime WITHOUT timezone. Format: YYYY-MM-DDTHH:mm:ss" },
+                    timeZone: {
+                       type: "string",description: "IANA time zone identifier, e.g., 'America/New_York'"},
                   },
                   required: ["summary", "startDateTime", "endDateTime", "timeZone"],
                 },
@@ -58,14 +63,14 @@ const tools : Tool[] = [   // all calendar functions
                   type: "object",
                   properties: {
                     eventId: { type: "string" },
-                    q: { type: "string" },
+                    q: { type: "string", description: "search query to find event(s) to update" },
                     date: { type: "string" },
                     summary: { type: "string" },
                     description: { type: "string" },
                     location: { type: "string" },
                     startDateTime: { type: "string",description: "Local datetime WITHOUT timezone. Format: YYYY-MM-DDTHH:mm:ss"},
                     endDateTime: { type: "string" ,description: "Local datetime WITHOUT timezone. Format: YYYY-MM-DDTHH:mm:ss"},
-                    timeZone: { type: "string" },
+                    timeZone: { type: "string", description: "IANA time zone identifier, e.g., 'America/New_York'"},
                   },
                 },
               },
@@ -78,8 +83,8 @@ const tools : Tool[] = [   // all calendar functions
                 parameters: {
                   type: "object",
                   properties: {
-                    eventId: { type: "string" },
-                    q: { type: "string" },
+                    eventId: { type: "string"},
+                    q: { type: "string" , description: "search query to find event(s) to delete" },
                     date: { type: "string" },
                   },
                 },
