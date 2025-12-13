@@ -1,10 +1,10 @@
 // ai service to parsing and crud operations for calendar events
-
+import ollama from "ollama"
+import { Tool } from "ollama";
 import *as calendarService from "./calendar.service";
 import { COLORS } from "../types/colors";
 
-
-const tools = [   // all calendar functions 
+const tools : Tool[] = [   // all calendar functions 
            {
               type: "function",
               function: {
@@ -156,7 +156,7 @@ DATE CONTEXT:
 
 EVENT STRUCTURE:
 - summary (required for create), description, location (optional)
-- colorId: 1-11 (optional)
+- colorId: 1-11 (optional) with these colors: COLORS = ${JSON.stringify(colors)}
 - startDateTime/endDateTime: YYYY-MM-DDTHH:mm:ss (required)
 - timeZone: IANA identifier (required)
 
@@ -166,20 +166,14 @@ CRITICAL:
 - Never use UTC or "Z" unless requested
 - For search, use 'q' and 'date' params instead of assuming IDs`;
 
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash',
-      tools: tools,
-      systemInstruction: systemInstruction
-    });
-
-    const result = await model.generateContent({
-      contents: [
-        {
-          role: 'user',
-          parts: [{ text: prompt }]
-        }
-      ]
-    });
+    const response = await ollama.chat({
+      model: "qwen2.5:7b-instruct",
+      messages: [
+        {role: "system", content: systemInstruction},
+        {role: "user", content: prompt}
+      ],
+      tools: tools
+    })
 
 
 
