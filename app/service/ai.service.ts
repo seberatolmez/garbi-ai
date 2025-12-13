@@ -6,88 +6,87 @@ import { COLORS } from "../types/colors";
 
 const tools = [   // all calendar functions 
            {
-    type: "function",
-    function: {
-      name: "listEvents",
-      description: "list upcoming events from user primary google calendar",
-      parameters: {
-        type: "object",
-        properties: {
-          maxResults: {
-            type: "number",
-            description: "maximum number of events to retrieve",
-          },
-          timeMin: {
-            type: "string",
-            description: "RFC3339 timestamp to list events starting from (inclusive)",
-          },
-          timeMax: {
-            type: "string",
-            description: "RFC3339 timestamp to list events up to (inclusive)",
-          },
-        },
-      },
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "createEvent",
-      description: "create a new event in user primary google calendar",
-      parameters: {
-        type: "object",
-        properties: {
-          summary: { type: "string" },
-          description: { type: "string" },
-          colorId: { type: "string" },
-          location: { type: "string" },
-          startDateTime: { type: "string" },
-          endDateTime: { type: "string" },
-          timeZone: { type: "string" },
-        },
-        required: ["summary", "startDateTime", "endDateTime", "timeZone"],
-      },
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "updateEvent",
-      description: "update an existing event in user primary google calendar",
-      parameters: {
-        type: "object",
-        properties: {
-          eventId: { type: "string" },
-          q: { type: "string" },
-          date: { type: "string" },
-          summary: { type: "string" },
-          description: { type: "string" },
-          location: { type: "string" },
-          startDateTime: { type: "string" },
-          endDateTime: { type: "string" },
-          timeZone: { type: "string" },
-        },
-      },
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "deleteEvent",
-      description: "delete an event from user primary google calendar",
-      parameters: {
-        type: "object",
-        properties: {
-          eventId: { type: "string" },
-          q: { type: "string" },
-          date: { type: "string" },
-        },
-      },
-    },
-  },
+              type: "function",
+              function: {
+                name: "listEvents",
+                description: "list upcoming events from user primary google calendar",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    maxResults: {
+                      type: "number",
+                      description: "maximum number of events to retrieve",
+                    },
+                    timeMin: {
+                      type: "string",
+                      description: "RFC3339 timestamp to list events starting from (inclusive)",
+                    },
+                    timeMax: {
+                      type: "string",
+                      description: "RFC3339 timestamp to list events up to (inclusive)",
+                    },
+                  },
+                },
+              },
+            },
+            {
+              type: "function",
+              function: {
+                name: "createEvent",
+                description: "create a new event in user primary google calendar",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    summary: { type: "string" },
+                    description: { type: "string" },
+                    colorId: { type: "string" },
+                    location: { type: "string" },
+                    startDateTime: { type: "string" },
+                    endDateTime: { type: "string" },
+                    timeZone: { type: "string" },
+                  },
+                  required: ["summary", "startDateTime", "endDateTime", "timeZone"],
+                },
+              },
+            },
+            {
+              type: "function",
+              function: {
+                name: "updateEvent",
+                description: "update an existing event in user primary google calendar",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    eventId: { type: "string" },
+                    q: { type: "string" },
+                    date: { type: "string" },
+                    summary: { type: "string" },
+                    description: { type: "string" },
+                    location: { type: "string" },
+                    startDateTime: { type: "string" },
+                    endDateTime: { type: "string" },
+                    timeZone: { type: "string" },
+                  },
+                },
+              },
+            },
+            {
+              type: "function",
+              function: {
+                name: "deleteEvent",
+                description: "delete an event from user primary google calendar",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    eventId: { type: "string" },
+                    q: { type: "string" },
+                    date: { type: "string" },
+                  },
+                },
+              },
+            },
      ];
 
-const GEMINI_API_KEY = process
 const colors = COLORS;
 
 export async function handleUserPrompt(prompt: string, accessToken: string, userTimeZone?: string) {
