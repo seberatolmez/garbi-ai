@@ -175,23 +175,19 @@ CRITICAL:
       tools: tools
     })
 
+    const toolCalls = response.message.tool_calls;
+    console.log('Tool calls received:', JSON.stringify(toolCalls, null, 2));
 
-
-    const functionCalls = result.response.functionCalls();
-
-    console.log('Function calls received:', JSON.stringify(functionCalls, null, 2));
-
-    if (!functionCalls || functionCalls.length === 0) {
-      const text = result.response.text();
+    if (!toolCalls || toolCalls.length === 0) {
+      const text = response.message.content || "I'm sorry, I couldn't process your request.";
       console.log('No function calls, returning text response:', text);
       return { type: "text", message: text };
     }
     
     // Process all function calls in parallel and collect results
     const results = await Promise.all(
-      functionCalls.map(async (functionCall) => { 
-        const {name,args} = functionCall;
-        const argsTyped = args as any; 
+      toolCalls.map(async (call) => { 
+        const {name,arguments:argsTyped} = call.function;
         console.log(`Calling function: ${name}`, 'with args:', JSON.stringify(argsTyped, null, 2));
 
         switch (name) {
