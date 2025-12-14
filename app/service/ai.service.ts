@@ -20,11 +20,11 @@ const tools : Tool[] = [   // all calendar functions
                     },
                     timeMin: {
                       type: "string",
-                      description: "RFC3339 datetime WITHOUT timezone. Format: YYYY-MM-DDTHH:mm:ss.",
+                      description: "RFC3339 datetime in UTC. Format: YYYY-MM-DDTHH:mm:ssZ (must end with Z)",
                     },
                     timeMax: {
                       type: "string",
-                      description: "RFC3339 datetime WITHOUT timezone. Format: YYYY-MM-DDTHH:mm:ss.",
+                      description: "RFC3339 datetime in UTC. Format: YYYY-MM-DDTHH:mm:ssZ (must end with Z)",
                     },
                   },
                 },
@@ -311,7 +311,7 @@ casual chat → respond naturally, no tools
               
               //event object from function arguments
               const eventData = {
-                summary: argsTyped.summary || 'Untitled Event',
+                summary: argsTyped.summary || '(Untitled Event)',
                 description: argsTyped.description || '',
                 location: argsTyped.location || '',
                 colorId: argsTyped.colorId,
