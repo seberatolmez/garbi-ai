@@ -207,7 +207,7 @@ createEvent requirements:
 - colorId: 1-11 ${Object.entries(colors).map(([id, name]) => `${id}=${name}`).join(', ')}
 - location, description (optional)
 
-DateTime format: YYYY-MM-DDTHH:mm:ss (NO timezone suffix, NO 'Z')
+DateTime format: YYYY-MM-DDTHH:mm:ss (NO timezone suffix, NO 'Z') (except in listEvents timeMin/timeMax)
 Timezone: Always use "${timeZone}" unless user specifies otherwise
 </tool_rules>
 
