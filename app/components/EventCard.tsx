@@ -1,6 +1,4 @@
 
-
-import { cn } from "@/lib/utils";
 import { EventCardProps } from "../types/types";
 import { COLORS } from "../types/colors";
 import React from "react";

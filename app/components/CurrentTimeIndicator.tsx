@@ -23,7 +23,7 @@ export function CurrentTimeIndicator({containerHeight}: {containerHeight: number
     return (
         <div className="flex flex-row">
          <div // left red dot
-            className="absolute left-0 -ml-1.5 w-3 h-3 bg-[var(--color-red)] rounded-full z-[80]"
+            className="absolute left-0 -ml-1.5 w-3 h-3 bg-[var(--color-red)] rounded-full z-[50]"
             style={{ top: `${position-6}px` }} // -6 center the dot
         />   
         <div

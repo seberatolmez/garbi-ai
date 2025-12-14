@@ -89,7 +89,7 @@ function WeekView({ currentDate, events, onEventClick, today }: { currentDate: D
     <div className="flex-1 overflow-auto">
       <div className="min-w-[800px]">
         {/* Days header */}
-        <div className="grid grid-cols-[100px_1fr_1fr_1fr_1fr_1fr_1fr_1fr] border-b border-border sticky top-0 bg-card z-[100]">
+        <div className="grid grid-cols-[100px_1fr_1fr_1fr_1fr_1fr_1fr_1fr] border-b border-border sticky top-0 bg-card z-[39]">
           <div className="p-4 text-sm font-medium text-muted-foreground">Time</div>
           {WEEK_DAYS.map((day) => {
             const date = addDays(weekStart, day);
@@ -241,7 +241,7 @@ function DayView({ currentDate, events, onEventClick, today }: { currentDate: Da
     <div className="flex-1 overflow-auto">
       <div className="min-w-[600px] grid grid-cols-[150px_1fr]">
         {/* HEADER */}
-        <div className="col-span-2 grid grid-cols-[100px_1fr] border-b border-border sticky top-0 bg-card z-[50]">
+        <div className="col-span-2 grid grid-cols-[100px_1fr] border-b border-border sticky top-0 bg-card z-[39]">
           <div className="p-4 text-sm font-medium text-muted-foreground">Time</div>
           <div className={cn(
             "p-4 text-center border-l border-border",
@@ -311,7 +311,7 @@ function DayView({ currentDate, events, onEventClick, today }: { currentDate: Da
                   left: `${left}%`,
                   width: `${width}%`,
                   height: `${Math.max(position.height, 20)}px`, // Minimum height of 20px
-                  zIndex: 10 + index, // Ensure events have proper stacking order
+                  zIndex: 5 + index, // Ensure events have proper stacking order
                 }}
               >
                 <EventCard
