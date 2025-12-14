@@ -85,11 +85,35 @@ const tools : Tool[] = [   // all calendar functions
                   properties: {
                     eventId: { type: "string"},
                     q: { type: "string" , description: "search query to find event(s) to delete" },
-                    date: { type: "string" },
+                    timeMin: {
+                      type: "string",
+                      description: "Start time filter RFC3339 datetime WITHOUT timezone. Format: YYYY-MM-DDTHH:mm:ss.",
+                    },
+                    timeMax: {
+                      type: "string",
+                      description: "End time filter RFC3339 datetime WITHOUT timezone. Format: YYYY-MM-DDTHH:mm:ss.",
+                    }
                   },
+                  "required": ["q"]
                 },
               },
             },
+
+            {
+              type: "function",
+              function: {
+                name: "findEventsByQuery",
+                description: "search for events in user primary google calendar",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    q: { type: "string" , description: "search query to find event(s)" },
+                    date: { type: "string" , description: "date to filter events. Format: YYYY-MM-DD" },
+                    maxLookAheadDays: { type: "number", description: "maximum number of days ahead from today to search" }
+                  }
+                }
+              }
+            }
      ];
 
 const colors = COLORS;
