@@ -49,7 +49,8 @@ const tools : Tool[] = [   // all calendar functions
                       type: "string",
                       description: "Local datetime WITHOUT timezone. Format: YYYY-MM-DDTHH:mm:ss" },
                     timeZone: {
-                       type: "string",description: "IANA time zone identifier, e.g., 'America/New_York'"},
+                       type: "string",
+                       description: "IANA time zone identifier, e.g., 'America/New_York'"},
                   },
                   required: ["summary", "startDateTime", "endDateTime", "timeZone"],
                 },
@@ -63,16 +64,28 @@ const tools : Tool[] = [   // all calendar functions
                 parameters: {
                   type: "object",
                   properties: {
-                    eventId: { type: "string" },
-                    q: { type: "string", description: "search query to find event(s) to update" },
+                    eventId: { 
+                      type: "string",
+                      description: "Update an existing event. eventId MUST come from findEventsByQuery results. Do NOT call this without calling findEventsByQuery first."
+                    },
                     date: { type: "string" },
                     summary: { type: "string" },
                     description: { type: "string" },
                     location: { type: "string" },
-                    startDateTime: { type: "string",description: "Local datetime WITHOUT timezone. Format: YYYY-MM-DDTHH:mm:ss"},
-                    endDateTime: { type: "string" ,description: "Local datetime WITHOUT timezone. Format: YYYY-MM-DDTHH:mm:ss"},
-                    timeZone: { type: "string", description: "IANA time zone identifier, e.g., 'America/New_York'"},
+                    startDateTime: { 
+                      type: "string",
+                      description: "Local datetime WITHOUT timezone. Format: YYYY-MM-DDTHH:mm:ss"
+                    },
+                    endDateTime: { 
+                      type: "string" ,
+                      description: "Local datetime WITHOUT timezone. Format: YYYY-MM-DDTHH:mm:ss"
+                    },
+                    timeZone: { 
+                      type: "string", 
+                      description: "IANA time zone identifier, e.g., 'America/New_York'"
+                    },
                   },
+                  required: ["eventId"]
                 },
               },
             },
@@ -80,22 +93,16 @@ const tools : Tool[] = [   // all calendar functions
               type: "function",
               function: {
                 name: "deleteEvent",
-                description: "delete an event from user primary google calendar",
+                description: "Delete an event. eventId MUST come from findEventsByQuery results. Do NOT call this without calling findEventsByQuery first.",
                 parameters: {
                   type: "object",
                   properties: {
-                    eventId: { type: "string"},
-                    q: { type: "string" , description: "search query to find event(s) to delete" },
-                    timeMin: {
+                    eventId: { 
                       type: "string",
-                      description: "Start time filter RFC3339 datetime WITHOUT timezone. Format: YYYY-MM-DDTHH:mm:ss.",
+                      description: "Event ID obtanined from findEventsByQuery.REQUIRED."
                     },
-                    timeMax: {
-                      type: "string",
-                      description: "End time filter RFC3339 datetime WITHOUT timezone. Format: YYYY-MM-DDTHH:mm:ss.",
-                    }
                   },
-                  "required": ["q"]
+                  required: ["eventId"]
                 },
               },
             },
@@ -118,7 +125,8 @@ const tools : Tool[] = [   // all calendar functions
                     maxLookAheadDays: { 
                       type: "number", 
                       description: "maximum number of days ahead from today to search"}
-                  }
+                  },
+                  required: ["q"],
                 }
               }
             }
@@ -269,6 +277,7 @@ CRITICAL:
               }))
             };
           }
+
           case "createEvent": {
             try {
               //user's timezone if AI didn't provide one
