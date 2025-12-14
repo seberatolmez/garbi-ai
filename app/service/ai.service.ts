@@ -205,6 +205,24 @@ EVENT RULES:
 - startDateTime/endDateTime: YYYY-MM-DDTHH:mm:ss (required)
 - timeZone: IANA identifier (required)
 
+WORKFLOW FOR UPDATE/DELETE:
+You MUST make TWO separate tool calls in sequence:
+1. FIRST: findEventsByQuery with q (title only) and optional date
+2. SECOND: updateEvent or deleteEvent using eventId from step 1
+
+EXAMPLE:
+User: "21.27'deki test eventi sil"
+Actions: findEventsByQuery({q: "test", date: "${currentDate}"}) → deleteEvent({eventId: "abc123"})
+
+User: "yarınki toplantıyı 15:00'e taşı"
+Actions: findEventsByQuery({q: "toplantı", date: "${tomorrowDate}"}) → updateEvent({eventId: "xyz", startDateTime: "..."})
+
+SEARCH RULES:
+- q: Event title ONLY (2-4 words)
+  ✅ "test", "meeting", "toplantı"
+  ❌ "test event 2025-12-14T21:27:00"
+- date: YYYY-MM-DD when user mentions specific day
+
 CRITICAL:
 - Use timezone "${timeZone}" for all times
 - "today" = ${currentDate}, "tomorrow" = ${tomorrowDate}
@@ -233,11 +251,12 @@ CRITICAL:
       return { type: "text", message: text };
     }
     
-    // Process all function calls in parallel and collect results
-    const results = await Promise.all(
-      toolCalls.map(async (call) => { 
-        const {name,arguments:argsTyped} = call.function;
-        console.log(`Calling function: ${name}`, 'with args:', JSON.stringify(argsTyped, null, 2));
+    // Process all function calls sequentially and collect results
+    let lastSearchEventId: string | null = null;
+    const results: any[] = [];
+    for (const call of toolCalls) {
+      const {name, arguments: argsTyped} = call.function;
+      console.log(`Calling function: ${name}`, 'with args:', JSON.stringify(argsTyped, null, 2));
 
         switch (name) {
           case "listEvents": {
@@ -245,7 +264,9 @@ CRITICAL:
             const timeMin = argsTyped.timeMin as string | undefined;
             const timeMax = argsTyped.timeMax as string | undefined;
             const events = await calendarService.listEvents(accessToken, maxResults, timeMax, timeMin);
-            return { type: "events", events };
+            const result = { type: "events", events };
+            results.push(result);
+            continue;
           }
           
           case "findEventsByQuery": {
@@ -260,13 +281,20 @@ CRITICAL:
             });
 
             if(candidates.length === 0) {
-              return {
+              const result = {
                 type: "text",
                 message: "No events found matching the criteria."
               };
+              results.push(result);
+              continue;
             }
 
-            return {
+            // Cache eventId if single result found
+            if (candidates.length === 1) {
+              lastSearchEventId = candidates[0].id!;
+            }
+
+            const result = {
               type: "searchResults",
               message: `Found ${candidates.length} event(s)`,
               events: candidates.map(event => ({
@@ -276,6 +304,8 @@ CRITICAL:
                 end: event.end?.dateTime,
               }))
             };
+            results.push(result);
+            continue;
           }
 
           case "createEvent": {
@@ -307,7 +337,9 @@ CRITICAL:
 
               const result = await calendarService.createEvent(accessToken, eventData);
               console.log('Event created successfully:', result.event?.id);
-              return { type: "event", event: result.event, message: result.message };
+              const createResult = { type: "event", event: result.event, message: result.message };
+              results.push(createResult);
+              continue;
             } catch (error) {
               console.error('Error in createEvent case:', error);
               throw error;
@@ -315,47 +347,15 @@ CRITICAL:
           }
           case "updateEvent": {
             try {
-              let eventId = (argsTyped.eventId as string | undefined)?.trim();
+              let eventId = (argsTyped.eventId as string | undefined)?.trim() || lastSearchEventId;
               
               if (!eventId) {
-                const q = (argsTyped.q as string | undefined)?.trim();
-                const date = (argsTyped.date as string | undefined)?.trim();
-                
-                if (!q && !date) {
-                  throw new Error('Either eventId or search criteria (q/date) must be provided');
-                }
-
-                const candidates = await calendarService.findEventsByQuery(accessToken, {
-                  q,
-                  date,
-                  maxLookAheadDays: 30
-                });
-
-                if (candidates.length === 0) {
-                  return {
-                    type: "text",
-                    message: "No events found matching the criteria to update."
-                  };
-                }
-                
-                if (candidates.length > 1) {
-                  return {
-                    type: "disambiguation",
-                    message: "Multiple matching events found. Please choose which to update.",
-                    candidates: candidates.map(event => ({
-                      id: event.id,
-                      summary: event.summary,
-                      start: event.start?.dateTime,
-                      end: event.end?.dateTime,
-                    }))
-                  };
-                }
-
-                eventId = candidates[0].id!;
-              }
-
-              if (!eventId) {
-                throw new Error('Event ID is required to update event');
+                const result = {
+                  type: "text",
+                  message: "eventId is required. Use findEventsByQuery first."
+                };
+                results.push(result);
+                continue;
               }
 
               // Fetch existing event to merge changes
@@ -392,58 +392,35 @@ CRITICAL:
 
               const result = await calendarService.updateEvent(accessToken, eventId, mergedEvent);
               console.log('Event updated successfully:', result.event?.id);
-              return { type: "event", event: result.event, message: result.message };
+              const updateResult = { type: "event", event: result.event, message: result.message };
+              results.push(updateResult);
+              continue;
             } catch (error) {
               console.error('Error in updateEvent case:', error);
               throw error;
             }
           }
           case "deleteEvent": {
-            const eventId = (argsTyped.eventId as string | undefined)?.trim();
-            if(eventId) {
-              const result = await calendarService.deleteEvent(accessToken, argsTyped.eventId);
-              return { type: "success", message: result.message };
-            }
-
-            const q = (argsTyped.q as string | undefined)?.trim();
-            const date = (argsTyped.date as string | undefined)?.trim();
-
-            const candidates = await calendarService.findEventsByQuery(accessToken,
-               {q,date, maxLookAheadDays: 30}
-            );
-
-            if(candidates.length === 0) {
-              return {
+            let eventId = (argsTyped.eventId as string | undefined)?.trim() || lastSearchEventId;
+            
+            if (!eventId) {
+              const result = {
                 type: "text",
-                message: "No events found matching the criteria to delete."
+                message: "eventId is required. Use findEventsByQuery first."
               };
-
+              results.push(result);
+              continue;
             }
-            // if only one candidate
-            if(candidates.length === 1) {
-              const deletedEventId = candidates[0].id!;
-              const result = await calendarService.deleteEvent(accessToken,deletedEventId);
-              return { type: "success", message: result.message, deletedEventId: deletedEventId };
-            }
-
-            // if multiple candidates, for now delete just one
-            return {
-              type: "disambiguation",
-              message: "Multiple matching events found. Please choose which to delete.",
-              candidates: candidates.map(event => ({ // mapping these 4 fields
-                id: event.id,
-                summary: event.summary,
-                start: event.start?.dateTime,
-                end: event.end?.dateTime,
-              }))
-            }
-
+            
+            const result = await calendarService.deleteEvent(accessToken, eventId);
+            const deleteResult = { type: "success", message: result.message };
+            results.push(deleteResult);
+            continue;
           }
           default:
             throw new Error(`Unknown tool: ${name}`);
         }
-      })
-    );
+    }
 
     // Return single result if only one operation, array if multiple
     if (results.length === 1) {
