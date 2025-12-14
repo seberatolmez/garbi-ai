@@ -3,6 +3,7 @@ import ollama from "ollama"
 import { Tool } from "ollama";
 import *as calendarService from "./calendar.service";
 import { COLORS } from "../types/colors";
+import { calendar } from "googleapis/build/src/apis/calendar";
 
 const tools : Tool[] = [   // all calendar functions 
            {
@@ -98,18 +99,25 @@ const tools : Tool[] = [   // all calendar functions
                 },
               },
             },
-
             {
-              type: "function",
+              type: "function", // may be useful for searching events before update/delete, not exposed directly yet
               function: {
                 name: "findEventsByQuery",
-                description: "search for events in user primary google calendar",
+                description: "REQUIRED before update/delete. Search events by title and optional date filter. Returns list of matching events with IDs.",
                 parameters: {
                   type: "object",
                   properties: {
-                    q: { type: "string" , description: "search query to find event(s)" },
-                    date: { type: "string" , description: "date to filter events. Format: YYYY-MM-DD" },
-                    maxLookAheadDays: { type: "number", description: "maximum number of days ahead from today to search" }
+                    q: { 
+                      type: "string" , 
+                      description: "Event title ONLY. Do NOT include dates, times, or timezones. Examples: 'test event', 'meeting', 'dentist'" 
+                    },
+                    date: { 
+                      type: "string" , 
+                      description: "Optional date filter. Format: YYYY-MM-DD. Use when user mentions specific day." 
+                    },
+                    maxLookAheadDays: { 
+                      type: "number", 
+                      description: "maximum number of days ahead from today to search"}
                   }
                 }
               }
@@ -230,6 +238,36 @@ CRITICAL:
             const timeMax = argsTyped.timeMax as string | undefined;
             const events = await calendarService.listEvents(accessToken, maxResults, timeMax, timeMin);
             return { type: "events", events };
+          }
+          
+          case "findEventsByQuery": {
+            const q = (argsTyped.q as string | undefined)?.trim();
+            const date = (argsTyped.date as string | undefined)?.trim();
+            const maxLookAheadDays = argsTyped.maxLookAheadDays || 30;
+
+            const candidates = await calendarService.findEventsByQuery(accessToken,{
+              q,
+              date,
+              maxLookAheadDays
+            });
+
+            if(candidates.length === 0) {
+              return {
+                type: "text",
+                message: "No events found matching the criteria."
+              };
+            }
+
+            return {
+              type: "searchResults",
+              message: `Found ${candidates.length} event(s)`,
+              events: candidates.map(event => ({
+                id: event.id,
+                summary: event.summary,
+                start: event.start?.dateTime,
+                end: event.end?.dateTime,
+              }))
+            };
           }
           case "createEvent": {
             try {
