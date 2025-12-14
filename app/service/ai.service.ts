@@ -124,7 +124,7 @@ const tools : Tool[] = [   // all calendar functions
                     },
                     maxLookAheadDays: { 
                       type: "number", 
-                      description: "maximum number of days ahead from today to search"}
+                      description: "maximum number of days ahead from today to search. Default is 30. Use 7 for 'this week', 1 for 'today only'."}
                   },
                   required: ["q"],
                 }
@@ -181,53 +181,49 @@ export async function handleUserPrompt(prompt: string, accessToken: string, user
     }).formatToParts(tomorrow);
     const tomorrowDate = `${getPart(tomorrowDateParts, 'year')}-${getPart(tomorrowDateParts, 'month')}-${getPart(tomorrowDateParts, 'day')}`;
 
-    const systemInstruction = 
-`You are Garbi, an AI assistant for Google Calendar management.
+    const systemInstruction = `You are Garbi, a Google Calendar AI assistant.
 
-TOOLS: listEvents, createEvent, updateEvent, deleteEvent
+<context>
+Current: ${currentDateTime} (${timeZone})
+Tomorrow: ${tomorrowDate}
+</context>
 
-RULES:
-- list/show/get/list events → listEvents
-- add/schedule/create → createEvent  
-- move/reschedule/change → updateEvent
-- cancel/remove/delete → deleteEvent
-- greetings/small talk → plain text response
+<tool_rules>
+CRITICAL - UPDATE/DELETE WORKFLOW:
+Step 1: findEventsByQuery({q: "title_only", date?: "YYYY-MM-DD"})
+Step 2: updateEvent/deleteEvent({eventId: "from_step_1"})
 
-DATE CONTEXT:
-- Today: ${currentDate}
-- Current time: ${currentDateTime}
-- Tomorrow: ${tomorrowDate}
-- Timezone: ${timeZone}
+NEVER update/delete without findEventsByQuery first.
 
-EVENT RULES:
-- summary (required for create), description, location (optional)
-- colorId: 1-11 , avaliable colors: ${JSON.stringify(colors)}
-- startDateTime/endDateTime: YYYY-MM-DDTHH:mm:ss (required)
-- timeZone: IANA identifier (required)
+findEventsByQuery:
+- q: 2-4 word title ONLY. NO dates, times, or extra text
+  ✓ "meeting" "test" "dentist"
+  ✗ "meeting on monday" "test event 2025-12-14"
+- date: YYYY-MM-DD (optional, use when user specifies a day)
+- maxLookAheadDays: search window (default: 30)
 
-WORKFLOW FOR UPDATE/DELETE:
-You MUST make TWO separate tool calls in sequence:
-1. FIRST: findEventsByQuery with q (title only) and optional date
-2. SECOND: updateEvent or deleteEvent using eventId from step 1
+createEvent requirements:
+- summary, startDateTime, endDateTime, timeZone (required)
+- colorId: 1-11 ${Object.entries(colors).map(([id, name]) => `${id}=${name}`).join(', ')}
+- location, description (optional)
 
-EXAMPLE:
-User: "21.27'deki test eventi sil"
-Actions: findEventsByQuery({q: "test", date: "${currentDate}"}) → deleteEvent({eventId: "abc123"})
+DateTime format: YYYY-MM-DDTHH:mm:ss (NO timezone suffix, NO 'Z')
+Timezone: Always use "${timeZone}" unless user specifies otherwise
+</tool_rules>
 
-User: "yarınki toplantıyı 15:00'e taşı"
-Actions: findEventsByQuery({q: "toplantı", date: "${tomorrowDate}"}) → updateEvent({eventId: "xyz", startDateTime: "..."})
+<intent_mapping>
+list/show/upcoming/what's → listEvents
+add/create/schedule/book → createEvent
+move/change/reschedule/update → findEventsByQuery → updateEvent
+cancel/delete/remove → findEventsByQuery → deleteEvent
+casual chat → respond naturally, no tools
+</intent_mapping>
 
-SEARCH RULES:
-- q: Event title ONLY (2-4 words)
-  ✅ "test", "meeting", "toplantı"
-  ❌ "test event 2025-12-14T21:27:00"
-- date: YYYY-MM-DD when user mentions specific day
-
-CRITICAL:
-- Use timezone "${timeZone}" for all times
-- "today" = ${currentDate}, "tomorrow" = ${tomorrowDate}
-- Never use UTC or "Z" unless requested
-- For search, use 'q' and 'date' params instead of assuming IDs`;
+<examples>
+"21.27'deki test eventi sil" → findEventsByQuery({q:"test", date:"${currentDate}"}) → deleteEvent({eventId})
+"yarın 15:00'e toplantı" → createEvent({summary:"toplantı", startDateTime:"${tomorrowDate}T15:00:00", ...})
+"pazartesi meeting'i 16:00'e al" → findEventsByQuery({q:"meeting", date:"2025-12-16"}) → updateEvent({eventId, startDateTime:"..."})
+</examples>`;
 
     const response = await ollama.chat({
       model: "qwen2.5:7b-instruct",
@@ -358,7 +354,7 @@ CRITICAL:
                 continue;
               }
 
-              // Fetch existing event to merge changes
+              // Fetch existing event
               const existingEvent = await calendarService.getEventById(accessToken, eventId);
               
               // Build updated event data from function arguments
