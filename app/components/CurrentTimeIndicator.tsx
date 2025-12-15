@@ -27,7 +27,7 @@ export function CurrentTimeIndicator({containerHeight}: {containerHeight: number
             style={{ top: `${position-6}px` }} // -6 center the dot
         />   
         <div
-            className="absolute left-0 right-0 bg-[var(--color-red)]  z-[70] h-0.5"
+            className="absolute left-0 right-0 bg-[var(--color-red)] z-[50] h-0.5"
             style={{ top: `${position}px` }}
         />
         </div>
