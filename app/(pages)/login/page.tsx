@@ -59,13 +59,7 @@ export default function LoginPage() {
 
         <p className="text-gray-400 text-md pt-4">
           Powered by{" "}
-          <a
-            href="https://gemini.google.com/app"
-            className="text-[#6F55FF] text-lg font-bold"
-            target="_blank"
-          >
-            Gemini
-          </a>
+        <span className="text-[#6F55FF] text-lg font-bold">AI</span>
         </p>
       </div>
     </div>
