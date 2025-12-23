@@ -208,6 +208,7 @@ createEvent requirements:
 
 DateTime format: YYYY-MM-DDTHH:mm:ss (NO timezone suffix, NO 'Z') (except in listEvents timeMin/timeMax)
 Timezone: Always use "${timeZone}" unless user specifies otherwise
+If event ends after midnight, endDateTime MUST use NEXT DAY's date.
 </tool_rules>
 
 <intent_mapping>

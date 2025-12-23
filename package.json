@@ -10,6 +10,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@deepgram/sdk": "^4.11.3",
     "@google/generative-ai": "^0.24.1",
     "@icons-pack/react-simple-icons": "^13.8.0",
     "@radix-ui/react-dialog": "^1.1.15",
