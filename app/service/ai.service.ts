@@ -224,8 +224,10 @@ casual chat → respond naturally, no tools
 "pazartesi meeting'i 16:00'e al" → findEventsByQuery({q:"meeting", date:"2025-12-16"}) → updateEvent({eventId, startDateTime:"..."})
 </examples>`;
 
+    const GROQ_API_KEY = process.env.GROQ_API_KEY!;
+
     const groq = new Groq({
-      apiKey: process.env.GROQ_API_KEY!,
+      apiKey: GROQ_API_KEY,
     });
 
     const response = await groq.chat.completions.create({
