@@ -1,7 +1,5 @@
 // ai service to parsing and crud operations for calendar events
-import ollama from "ollama"
-import { Tool } from "ollama";
-import { Groq} from "groq-sdk"
+import { Groq } from "groq-sdk"
 import *as calendarService from "./calendar.service";
 import { COLORS } from "../types/colors";
 import { ChatCompletionTool } from "groq-sdk/resources/chat/completions.mjs";
@@ -226,18 +224,6 @@ casual chat → respond naturally, no tools
 "pazartesi meeting'i 16:00'e al" → findEventsByQuery({q:"meeting", date:"2025-12-16"}) → updateEvent({eventId, startDateTime:"..."})
 </examples>`;
 
-    const response1 = await ollama.chat({ // past ollama implementation
-      model: "qwen2.5:7b-instruct",
-      messages: [
-        {role: "system", content: systemInstruction},
-        {role: "user", content: prompt}
-      ],
-      options: {
-        temperature: 0, // deterministic output for now
-        top_p: 0.9, 
-      }
-    })
-
     const groq = new Groq({
       apiKey: process.env.GROQ_API_KEY!,
     });
@@ -250,11 +236,11 @@ casual chat → respond naturally, no tools
       tools: tools,  
     })
 
-    const toolCalls = response.message.tool_calls;
+    const toolCalls = response.choices[0].message.tool_calls;
     console.log('Tool calls received:', JSON.stringify(toolCalls, null, 2));
 
     if (!toolCalls || toolCalls.length === 0) {
-      const text = response.message.content || "I'm sorry, I couldn't process your request.";
+      const text = response.choices[0].message.content || "I'm sorry, I couldn't process your request.";
       console.log('No function calls, returning text response:', text);
       return { type: "text", message: text };
     }
@@ -263,14 +249,15 @@ casual chat → respond naturally, no tools
     let lastSearchEventId: string | null = null;
     const results: any[] = [];
     for (const call of toolCalls) {
-      const {name, arguments: argsTyped} = call.function;
-      console.log(`Calling function: ${name}`, 'with args:', JSON.stringify(argsTyped, null, 2));
+      const { name, arguments: argsString } = call.function;
+      const args = JSON.parse(argsString || '{}');
+      console.log(`Calling function: ${name}`, 'with args:', JSON.stringify(args, null, 2));
 
         switch (name) {
           case "listEvents": {
-            const maxResults = argsTyped.maxResults || 10;
-            const timeMin = argsTyped.timeMin as string | undefined;
-            const timeMax = argsTyped.timeMax as string | undefined;
+            const maxResults = args.maxResults || 10;
+            const timeMin = args.timeMin as string | undefined;
+            const timeMax = args.timeMax as string | undefined;
             const events = await calendarService.listEvents(accessToken, maxResults, timeMax, timeMin);
             const result = { type: "events", events };
             results.push(result);
@@ -278,9 +265,9 @@ casual chat → respond naturally, no tools
           }
           
           case "findEventsByQuery": {
-            const q = (argsTyped.q as string | undefined)?.trim();
-            const date = (argsTyped.date as string | undefined)?.trim();
-            const maxLookAheadDays = argsTyped.maxLookAheadDays || 30;
+            const q = (args.q as string | undefined)?.trim();
+            const date = (args.date as string | undefined)?.trim();
+            const maxLookAheadDays = args.maxLookAheadDays || 30;
 
             const candidates = await calendarService.findEventsByQuery(accessToken,{
               q,
@@ -319,20 +306,20 @@ casual chat → respond naturally, no tools
           case "createEvent": {
             try {
               //user's timezone if AI didn't provide one
-              const eventTimeZone = argsTyped.timeZone || userTimeZone || 'UTC';
+              const eventTimeZone = args.timeZone || userTimeZone || 'UTC';
               
               //event object from function arguments
               const eventData = {
-                summary: argsTyped.summary || '(Untitled Event)',
-                description: argsTyped.description || '',
-                location: argsTyped.location || '',
-                colorId: argsTyped.colorId,
+                summary: args.summary || '(Untitled Event)',
+                description: args.description || '',
+                location: args.location || '',
+                colorId: args.colorId,
                 start: {
-                  dateTime: argsTyped.startDateTime,
+                  dateTime: args.startDateTime,
                   timeZone: eventTimeZone
                 },
                 end: {
-                  dateTime: argsTyped.endDateTime,
+                  dateTime: args.endDateTime,
                   timeZone: eventTimeZone
                 }
               };
@@ -355,7 +342,7 @@ casual chat → respond naturally, no tools
           }
           case "updateEvent": {
             try {
-              let eventId = (argsTyped.eventId as string | undefined)?.trim() || lastSearchEventId;
+              let eventId = (args.eventId as string | undefined)?.trim() || lastSearchEventId;
               
               if (!eventId) {
                 const result = {
@@ -372,19 +359,19 @@ casual chat → respond naturally, no tools
               // Build updated event data from function arguments
               const updatedEventData: any = {};
               
-              if (argsTyped.summary !== undefined) updatedEventData.summary = argsTyped.summary;
-              if (argsTyped.description !== undefined) updatedEventData.description = argsTyped.description;
-              if (argsTyped.location !== undefined) updatedEventData.location = argsTyped.location;
-              if (argsTyped.startDateTime) {
+              if (args.summary !== undefined) updatedEventData.summary = args.summary;
+              if (args.description !== undefined) updatedEventData.description = args.description;
+              if (args.location !== undefined) updatedEventData.location = args.location;
+              if (args.startDateTime) {
                 updatedEventData.start = {
-                  dateTime: argsTyped.startDateTime,
-                  timeZone: argsTyped.timeZone || userTimeZone || existingEvent.start?.timeZone || 'UTC'
+                  dateTime: args.startDateTime,
+                  timeZone: args.timeZone || userTimeZone || existingEvent.start?.timeZone || 'UTC'
                 };
               }
-              if (argsTyped.endDateTime) {
+              if (args.endDateTime) {
                 updatedEventData.end = {
-                  dateTime: argsTyped.endDateTime,
-                  timeZone: argsTyped.timeZone || userTimeZone || existingEvent.end?.timeZone || 'UTC'
+                  dateTime: args.endDateTime,
+                  timeZone: args.timeZone || userTimeZone || existingEvent.end?.timeZone || 'UTC'
                 };
               }
               
@@ -409,7 +396,7 @@ casual chat → respond naturally, no tools
             }
           }
           case "deleteEvent": {
-            let eventId = (argsTyped.eventId as string | undefined)?.trim() || lastSearchEventId;
+            let eventId = (args.eventId as string | undefined)?.trim() || lastSearchEventId;
             
             if (!eventId) {
               const result = {
