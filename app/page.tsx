@@ -19,7 +19,7 @@ export default function AskGarbi() {
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<any>(null);
 
-  useEffect(() => {
+  useEffect(() => { // TODO: move to higher level component, so all pages are protected
     if (!session) {
       router.push("/login");
     }

@@ -1,11 +1,12 @@
 // ai service to parsing and crud operations for calendar events
 import ollama from "ollama"
 import { Tool } from "ollama";
+import { Groq} from "groq-sdk"
 import *as calendarService from "./calendar.service";
 import { COLORS } from "../types/colors";
-import { calendar } from "googleapis/build/src/apis/calendar";
+import { ChatCompletionTool } from "groq-sdk/resources/chat/completions.mjs";
 
-const tools : Tool[] = [   // all calendar functions 
+const tools : Array<ChatCompletionTool> = [   // all calendar functions 
            {
               type: "function",
               function: {
@@ -225,17 +226,28 @@ casual chat → respond naturally, no tools
 "pazartesi meeting'i 16:00'e al" → findEventsByQuery({q:"meeting", date:"2025-12-16"}) → updateEvent({eventId, startDateTime:"..."})
 </examples>`;
 
-    const response = await ollama.chat({
+    const response1 = await ollama.chat({ // past ollama implementation
       model: "qwen2.5:7b-instruct",
       messages: [
         {role: "system", content: systemInstruction},
         {role: "user", content: prompt}
       ],
-      tools: tools,
       options: {
         temperature: 0, // deterministic output for now
         top_p: 0.9, 
       }
+    })
+
+    const groq = new Groq({
+      apiKey: process.env.GROQ_API_KEY!,
+    });
+
+    const response = await groq.chat.completions.create({
+      model: "llama-3.1-8b-instant",
+      messages: [
+        {role: "system", content: systemInstruction},
+        {role: "user", content: prompt}],
+      tools: tools,  
     })
 
     const toolCalls = response.message.tool_calls;
