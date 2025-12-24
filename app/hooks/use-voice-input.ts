@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { UseVoiceInputOptions, UseVoiceInputReturn } from '../types/types';
 
 // Message types matching server-side
 interface TranscriptionMessage {
@@ -9,21 +10,6 @@ interface TranscriptionMessage {
   isFinal?: boolean;
   error?: string;
   status?: 'connected' | 'disconnected';
-}
-
-export interface UseVoiceInputOptions {
-  onTranscript?: (text: string, isFinal: boolean) => void;
-  onError?: (error: string) => void;
-  onStatusChange?: (status: 'idle' | 'connecting' | 'recording' | 'error') => void;
-}
-
-export interface UseVoiceInputReturn {
-  isRecording: boolean;
-  isConnecting: boolean;
-  status: 'idle' | 'connecting' | 'recording' | 'error';
-  error: string | null;
-  startRecording: () => Promise<void>;
-  stopRecording: () => void;
 }
 
 export function useVoiceInput(options: UseVoiceInputOptions = {}): UseVoiceInputReturn {

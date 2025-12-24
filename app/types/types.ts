@@ -84,3 +84,21 @@ export interface EventDetailsPopoverProps {
   onClose: () => void;
   onDelete: () => void;
 }
+
+// useVoiceInput hook interfaces
+
+export interface UseVoiceInputOptions {
+  onTranscript?: (text: string, isFinal: boolean) => void;
+  onError?: (error: string) => void;
+  onStatusChange?: (status: 'idle' | 'connecting' | 'recording' | 'error') => void;
+}
+
+export interface UseVoiceInputReturn {
+  isRecording: boolean;
+  isConnecting: boolean;
+  status: 'idle' | 'connecting' | 'recording' | 'error';
+  error: string | null;
+  startRecording: () => Promise<void>;
+  stopRecording: () => void;
+}
+
