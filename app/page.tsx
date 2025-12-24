@@ -1,8 +1,7 @@
 "use client";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { MicIcon, Sparkles} from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
 import {
   PromptInput,
   PromptInputTextarea,
@@ -11,6 +10,7 @@ import {
 } from "@/components/ui/shadcn-io/ai/prompt-input";
 import { Loader } from "@/components/ui/shadcn-io/ai/loader";
 import { EventPreview } from "./components/EventPreview";
+import { VoiceInputButton } from "./components/VoiceInputButton";
 
 export default function AskGarbi() {
   const { data: session } = useSession();
@@ -19,6 +19,11 @@ export default function AskGarbi() {
   const [input, setInput] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<any>(null);
+
+  // Handle voice transcription - append transcribed text to input
+  const handleVoiceTranscript = useCallback((text: string) => {
+    setInput(prev => prev + text);
+  }, []);
 
   useEffect(() => { // TODO: move to higher level component, so all pages are protected
     if (!session) {
@@ -89,13 +94,16 @@ export default function AskGarbi() {
             placeholder="Type what you want to do with garbi..."
           />
           <PromptInputToolbar>
+            <VoiceInputButton 
+              onTranscript={handleVoiceTranscript}
+              disabled={loading}
+            />
             <PromptInputSubmit
               disabled={!input.trim() || loading}
               onClick={handleSubmit}
               variant={"ghost"}
               size={"icon-lg"}
             />
-          
           </PromptInputToolbar>
            </PromptInput>
             
