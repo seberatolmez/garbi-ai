@@ -7,9 +7,8 @@
 */
 
 import { createClient } from "@deepgram/sdk";
-import { NextRequest } from "next/server";
 
-export function SOCKET(client: WebSocket ,request: NextRequest) {
+export function SOCKET(client: WebSocket) {
 
     const deepgram = createClient({key: process.env.DEEPGRAM_API_KEY!});
     const connection = deepgram.listen.live({
@@ -17,8 +16,14 @@ export function SOCKET(client: WebSocket ,request: NextRequest) {
     })
 
     // forward client audio to Deepgram
-
-
+    client.onmessage = (message) => {
+        if (typeof message.data === "string") return;
+        const audioChunk = structuredClone(message.data);
+        connection.send(audioChunk);
+    };
 
     // Send transcription results back to client
+    connection.on('transcript', (transcript) => {
+        client.send(JSON.stringify({ type: 'transcript', data: transcript }));
+    });
 }
