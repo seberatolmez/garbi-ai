@@ -2,6 +2,7 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { MicIcon, Sparkles} from "lucide-react";
 import {
   PromptInput,
   PromptInputTextarea,
@@ -94,6 +95,7 @@ export default function AskGarbi() {
               variant={"ghost"}
               size={"icon-lg"}
             />
+          
           </PromptInputToolbar>
            </PromptInput>
             
