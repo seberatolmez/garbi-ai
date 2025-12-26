@@ -3,7 +3,7 @@
 import { useCallback, useState } from 'react';
 import { Mic, MicOff, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useVoiceInput } from '@/app/hooks/use-voice-input';
+import { useVoiceInput } from '@/app/hooks/useVoiceInput';
 import { cn } from '@/lib/utils';
 
 interface VoiceInputButtonProps {
