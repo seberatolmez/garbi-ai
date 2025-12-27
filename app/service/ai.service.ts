@@ -179,8 +179,10 @@ export async function handleUserPrompt(prompt: string, accessToken: string, user
       day: '2-digit',
     }).formatToParts(tomorrow);
     const tomorrowDate = `${getPart(tomorrowDateParts, 'year')}-${getPart(tomorrowDateParts, 'month')}-${getPart(tomorrowDateParts, 'day')}`;
-
-    const systemInstruction = `You are Garbi, a Google Calendar AI assistant.
+    
+    // TODO: resolve system prompt properly
+    const systemInstruction = 
+    `You are Garbi, a Calendar Management AI assistant. You are able to manage user's calendar events.
 
 <context>
 Current: ${currentDateTime} (${timeZone})
