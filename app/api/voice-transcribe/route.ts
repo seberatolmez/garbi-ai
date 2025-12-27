@@ -117,7 +117,7 @@ export function SOCKET(
   client.on('close', () => {
     console.log('[Voice Transcribe] Client disconnected');
     if (isDeepgramOpen) {
-      connection.finish();
+      connection.requestClose();
     }
   });
 
@@ -125,7 +125,7 @@ export function SOCKET(
   client.on('error', (error) => {
     console.error('[Voice Transcribe] Client error:', error);
     if (isDeepgramOpen) {
-      connection.finish();
+      connection.requestClose();
     }
   });
 }
