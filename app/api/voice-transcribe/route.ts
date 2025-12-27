@@ -32,7 +32,6 @@ export function SOCKET(
   const deepgram = createClient(apiKey);
   
   // Create live transcription connection
-  // No encoding/sample_rate specified - Deepgram auto-detects webm/opus from browser
   const connection = deepgram.listen.live({
     model: 'nova-2',
     smart_format: true,

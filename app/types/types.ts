@@ -1,3 +1,4 @@
+import { Hash } from "lucide-react";
 import nextAuth from "next-auth";
 import { MouseEvent as ReactMouseEvent } from "react";
 
@@ -100,5 +101,21 @@ export interface UseVoiceInputReturn {
   error: string | null;
   startRecording: () => Promise<void>;
   stopRecording: () => void;
+}
+
+// user-preferences interfaces 
+
+interface WorkingHour {
+    day: string,
+    startHour: string,
+    endHour: string
+}
+
+export interface UserPreferences {
+  workingHours?: WorkingHour[],
+  rules?: string[],
+  preferredMeetingLengths?: number,
+  bufferTimeBetweenMeetings?: number,
+  focusTimePreferences?: string
 }
 
