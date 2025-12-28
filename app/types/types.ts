@@ -105,16 +105,29 @@ export interface UseVoiceInputReturn {
 
 // user-preferences interfaces 
 
-interface WorkingHour {
-    day: string,
-    startHour: string,
-    endHour: string
-}
+export type Day =
+| "MONDAY"
+| "TUESDAY"
+| "WEDNESDAY"
+| "THURSDAY"
+| "FRIDAY"
+| "SATURDAY"
+| "SUNDAY";
+
+export interface TimeInterval {
+  start: string, // "09:00"
+  end: string 
+}  
+export type Schedule = {
+    [key in Day]?: TimeInterval[]
+};
 
 export interface UserPreferences {
-  workingHours?: WorkingHour[],
+  workingHours?: Schedule,
+  personelHours?: Schedule,
+  meetingHours?: Schedule,
   rules?: string[],
-  preferredMeetingLengths?: number,
+  preferredMeetingDuration?: number,
   bufferTimeBetweenMeetings?: number,
   focusTimePreferences?: string
 }
