@@ -116,9 +116,9 @@ export type Day =
 
 export interface TimeInterval {
   start: string, // "09:00"
-  end: string 
-}  
-export type Schedule = {
+  end: string   // "18:00"
+ }  
+export type Schedule = { // for working, meeting and personel hours 
     [key in Day]?: TimeInterval[]
 };
 
