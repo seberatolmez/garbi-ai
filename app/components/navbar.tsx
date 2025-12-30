@@ -3,18 +3,20 @@
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { handleSignOut } from "@/app/service/auth.service";
-import { LogOutIcon } from "lucide-react";
+import { LogOutIcon, SlidersHorizontal} from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-
+import { useRouter } from "next/navigation";
 export function Navbar() {
   const { data: session } = useSession();
   const pathname = usePathname();
-
+  const router = useRouter();
+  
   // Map routes to page names
   const getPageName = () => {
     if (pathname === "/timeline") return "Timeline";
+    if (pathname === "/preferences") return "Preferences"
     if (pathname === "/garbi" || pathname === "/") return "Ask Garbi";
-    // Add more mappings as needed
+
     return "Ask Garbi"; // default
   };
 
@@ -32,6 +34,13 @@ export function Navbar() {
       </div>
 
       <div className="flex items-center gap-3">
+        <button
+        className="cursor-pointer"
+        onClick={() => router.push("/preferences")}
+        >
+          <SlidersHorizontal size={24}/>
+        </button>
+
         <button
           className="bg-[#6F55FF] hover:bg-[#5d46e0] text-white px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer"
           onClick={() => window.open("https://calendar.google.com")}
