@@ -36,7 +36,7 @@ export function Navbar() {
       <div className="flex items-center gap-3">
         <button
         className="cursor-pointer"
-        onClick={() => router.push("/preferences")}
+        onClick={() => router.push("/settings/user-preferences")}
         >
           <SlidersHorizontal size={24}/>
         </button>
