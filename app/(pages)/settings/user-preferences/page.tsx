@@ -1,3 +1,5 @@
+'use client';
+
 import { SchedulePreferenceSection } from "@/app/components/SchedulePreferenceSection";
 import { useState } from "react";
 import { Schedule } from "@/app/types/types";

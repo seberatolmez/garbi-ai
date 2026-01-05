@@ -14,7 +14,7 @@ export function Navbar() {
   // Map routes to page names
   const getPageName = () => {
     if (pathname === "/timeline") return "Timeline";
-    if (pathname === "/preferences") return "Preferences"
+    if (pathname === "/settings/user-preferences") return "Preferences"
     if (pathname === "/garbi" || pathname === "/") return "Ask Garbi";
 
     return "Ask Garbi"; // default
