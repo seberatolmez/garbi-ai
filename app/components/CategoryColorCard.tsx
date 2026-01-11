@@ -1,15 +1,8 @@
 'use client';
 
 import { useState } from "react";
-import { COLORS } from "../types/colors";
-
-type Category =
-    | "Team Meeting"
-    | "Work"
-    | "Personal"
-    | "External Meeting"
-    | "Travel & Breaks"
-    | "Other";
+import { Category } from "../types/types";
+import { COLORS, COLOR_IDS, ColorId } from "../types/colors";
 
 interface CategoryColorCardProps {
     category: Category;
@@ -17,10 +10,6 @@ interface CategoryColorCardProps {
     description: string;
     onChange: (colorId: string) => void;
 }
-
-// Get color IDs as number keys
-const colorIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] as const;
-type ColorId = (typeof colorIds)[number];
 
 export function CategoryColorCard({
     category,
@@ -52,7 +41,7 @@ export function CategoryColorCard({
                     <span className="text-sm text-gray-600">Calendar color</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                    {colorIds.map((id) => (
+                    {COLOR_IDS.map((id) => (
                         <button
                             key={id}
                             onClick={(e) => {

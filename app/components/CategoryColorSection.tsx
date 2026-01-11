@@ -1,15 +1,7 @@
 'use client';
 
-import { CategoryColor } from "../types/types";
+import { Category, CategoryColor } from "../types/types";
 import { CategoryColorCard } from "./CategoryColorCard";
-
-type Category =
-    | "Team Meeting"
-    | "Work"
-    | "Personal"
-    | "External Meeting"
-    | "Travel & Breaks"
-    | "Other";
 
 interface CategoryColorSectionProps {
     categoryColors: CategoryColor[];

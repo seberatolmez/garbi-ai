@@ -122,13 +122,14 @@ export type Schedule = { // for working, meeting and personel hours
   [key in Day]?: TimeInterval[]
 };
 
-type Category =
+export type Category =
   | "Team Meeting"
   | "Work"
   | "Personal"
   | "External Meeting"
   | "Travel & Breaks"
   | "Other";
+
 export interface CategoryColor {
   category: Category;
   color: string; // Google Calendar color between 1-11

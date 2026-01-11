@@ -11,3 +11,7 @@ export const COLORS = {
   10: { name: "dark green", hex: "#51b749" },
   11: { name: "red", hex: "#dc2127" },
 };
+
+// Color IDs for Google Calendar colors (1-11)
+export const COLOR_IDS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] as const;
+export type ColorId = (typeof COLOR_IDS)[number];
