@@ -14,15 +14,9 @@ export default function UserPreferencesPage() {
     const [personelHours, setPersonelHours] = useState<Schedule>({});
     const [meetingHours, setMeetingHours] = useState<Schedule>({});
     const [categoryColors, setCategoryColors] = useState<CategoryColor[]>([]);
-
-    // New state for rules
     const [rules, setRules] = useState<UserRule[]>([]);
-
-    // New state for meeting preferences
     const [preferredMeetingDuration, setPreferredMeetingDuration] = useState<number>(30);
     const [bufferTimeBetweenMeetings, setBufferTimeBetweenMeetings] = useState<number>(10);
-
-    // New state for focus time preferences
     const [focusTimePreferences, setFocusTimePreferences] = useState<FocusTimePreference>({
         preferredBlocks: [{ start: "09:00", end: "12:00" }],
         minimumDuration: 60,
