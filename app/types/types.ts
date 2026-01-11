@@ -60,23 +60,23 @@ export interface CalendarEvent {
 
 export interface EventCardProps {
   event: CalendarEvent;
-  onClick?: (event: CalendarEvent, mouseEvent: ReactMouseEvent) => void; 
+  onClick?: (event: CalendarEvent, mouseEvent: ReactMouseEvent) => void;
 }
 
 // Calculate event position and dimensions
 export interface EventPosition {
-  top: number; 
-  height: number; 
-  startMinutes: number; 
-  endMinutes: number; 
+  top: number;
+  height: number;
+  startMinutes: number;
+  endMinutes: number;
 }
 
 // Group overlapping events and calculate horizontal positions
 export interface PositionedEvent {
   event: CalendarEvent;
   position: EventPosition;
-  left: number; 
-  width: number; 
+  left: number;
+  width: number;
 }
 
 export interface EventDetailsPopoverProps {
@@ -106,21 +106,33 @@ export interface UseVoiceInputReturn {
 // user-preferences interfaces 
 
 export type Day =
-| "MONDAY"
-| "TUESDAY"
-| "WEDNESDAY"
-| "THURSDAY"
-| "FRIDAY"
-| "SATURDAY"
-| "SUNDAY";
+  | "MONDAY"
+  | "TUESDAY"
+  | "WEDNESDAY"
+  | "THURSDAY"
+  | "FRIDAY"
+  | "SATURDAY"
+  | "SUNDAY";
 
 export interface TimeInterval {
   start: string, // "09:00"
   end: string   // "18:00"
- }  
+}
 export type Schedule = { // for working, meeting and personel hours 
-    [key in Day]?: TimeInterval[]
+  [key in Day]?: TimeInterval[]
 };
+
+type Category =
+  | "Team Meeting"
+  | "Work"
+  | "Personal"
+  | "External Meeting"
+  | "Travel & Breaks"
+  | "Other";
+export interface CategoryColor {
+  category: Category;
+  color: string; // Google Calendar color between 1-11
+}
 
 export interface UserPreferences {
   workingHours?: Schedule,
@@ -130,5 +142,6 @@ export interface UserPreferences {
   preferredMeetingDuration?: number,
   bufferTimeBetweenMeetings?: number,
   focusTimePreferences?: string
+  preferredColors?: CategoryColor[]
 }
 
