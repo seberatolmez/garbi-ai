@@ -44,8 +44,8 @@ export function DaysPicker({
                     <button
                         key={d.key}
                         onClick={() => toggleDay(d.key)}
-                        className={`px-3 py-1 rounded-md text-sm transition cursor-pointer
-                            ${active ? "bg-black text-white" : "bg-gray-100 text-gray-600"
+                        className={`w-9 h-9 rounded-full text-sm font-medium transition cursor-pointer
+                            ${active ? "bg-[#3034FF] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                             }`}
                     >
                         {d.label} {/* EX:  "Mo", "Tu" */}
