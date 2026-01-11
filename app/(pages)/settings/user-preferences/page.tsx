@@ -2,8 +2,11 @@
 
 import { SchedulePreferenceSection } from "@/app/components/SchedulePreferenceSection";
 import { CategoryColorSection } from "@/app/components/CategoryColorSection";
+import { RulesSection } from "@/app/components/RulesSection";
+import { MeetingPreferencesSection } from "@/app/components/MeetingPreferencesSection";
+import { FocusTimeSection } from "@/app/components/FocusTimeSection";
 import { useState } from "react";
-import { Schedule, CategoryColor } from "@/app/types/types";
+import { Schedule, CategoryColor, UserRule, FocusTimePreference } from "@/app/types/types";
 
 export default function UserPreferencesPage() {
 
@@ -11,6 +14,22 @@ export default function UserPreferencesPage() {
     const [personelHours, setPersonelHours] = useState<Schedule>({});
     const [meetingHours, setMeetingHours] = useState<Schedule>({});
     const [categoryColors, setCategoryColors] = useState<CategoryColor[]>([]);
+
+    // New state for rules
+    const [rules, setRules] = useState<UserRule[]>([]);
+
+    // New state for meeting preferences
+    const [preferredMeetingDuration, setPreferredMeetingDuration] = useState<number>(30);
+    const [bufferTimeBetweenMeetings, setBufferTimeBetweenMeetings] = useState<number>(10);
+
+    // New state for focus time preferences
+    const [focusTimePreferences, setFocusTimePreferences] = useState<FocusTimePreference>({
+        preferredBlocks: [{ start: "09:00", end: "12:00" }],
+        minimumDuration: 60,
+        maximumDuration: 120,
+        chronoType: "morning",
+        interruptionSensitivity: "medium",
+    });
 
     return (
         <div className="min-h-screen p-8 bg-white">
@@ -43,6 +62,26 @@ export default function UserPreferencesPage() {
                         onChange={setPersonelHours}
                     />
                 </div>
+
+                {/* Meeting Preferences Section */}
+                <MeetingPreferencesSection
+                    preferredMeetingDuration={preferredMeetingDuration}
+                    bufferTimeBetweenMeetings={bufferTimeBetweenMeetings}
+                    onDurationChange={setPreferredMeetingDuration}
+                    onBufferChange={setBufferTimeBetweenMeetings}
+                />
+
+                {/* Focus Time Section */}
+                <FocusTimeSection
+                    focusTimePreference={focusTimePreferences}
+                    onChange={setFocusTimePreferences}
+                />
+
+                {/* Rules Section */}
+                <RulesSection
+                    rules={rules}
+                    onChange={setRules}
+                />
 
                 {/* Category Colors Section */}
                 <CategoryColorSection
