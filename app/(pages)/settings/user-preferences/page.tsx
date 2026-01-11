@@ -1,34 +1,55 @@
 'use client';
 
 import { SchedulePreferenceSection } from "@/app/components/SchedulePreferenceSection";
+import { CategoryColorSection } from "@/app/components/CategoryColorSection";
 import { useState } from "react";
-import { Schedule } from "@/app/types/types";
+import { Schedule, CategoryColor } from "@/app/types/types";
 
 export default function UserPreferencesPage() {
 
     const [workingHours, setWorkingHours] = useState<Schedule>({});
     const [personelHours, setPersonelHours] = useState<Schedule>({});
     const [meetingHours, setMeetingHours] = useState<Schedule>({});
+    const [categoryColors, setCategoryColors] = useState<CategoryColor[]>([]);
 
     return (
-        <div className="min-h-screen p-8 bg-background">
-            <h1 className="text-2xl font-bold mb-6">User Preferences</h1>
-            <SchedulePreferenceSection
-                label="Working Hours"
-                value={workingHours}
-                onChange={setWorkingHours}
-            />
-            <SchedulePreferenceSection
-                label="Personal Hours"
-                value={personelHours}
-                onChange={setPersonelHours}
-            />
-            <SchedulePreferenceSection
-                label="Meeting Hours"
-                value={meetingHours}
-                onChange={setMeetingHours}
-            />
+        <div className="min-h-screen p-8 bg-white">
+            <div className="max-w-3xl">
+                {/* Hours Section */}
+                <div className="mb-10">
+                    <h2 className="text-lg font-semibold text-gray-800 mb-2">Hours</h2>
+                    <p className="text-sm text-gray-500 leading-relaxed mb-6">
+                        Set your default hours for Garbi's smart calendar scheduling. Unlike regular calendars,
+                        Garbi uses these time windows to intelligently schedule your tasks, meetings, and focus
+                        time within your preferred hours. Your hours are in <strong>GMT+03:00</strong>.
+                    </p>
+
+                    <SchedulePreferenceSection
+                        label="Working Hours"
+                        subtitle="Default for work Tasks & Habits"
+                        value={workingHours}
+                        onChange={setWorkingHours}
+                    />
+                    <SchedulePreferenceSection
+                        label="Meeting Hours"
+                        subtitle="Default for Smart Meetings & Scheduling Link meetings"
+                        value={meetingHours}
+                        onChange={setMeetingHours}
+                    />
+                    <SchedulePreferenceSection
+                        label="Personal Hours"
+                        subtitle="Default for personal Tasks & Habits"
+                        value={personelHours}
+                        onChange={setPersonelHours}
+                    />
+                </div>
+
+                {/* Category Colors Section */}
+                <CategoryColorSection
+                    categoryColors={categoryColors}
+                    onChange={setCategoryColors}
+                />
+            </div>
         </div>
     )
-
 }
