@@ -135,14 +135,31 @@ export interface CategoryColor {
   color: string; // Google Calendar color between 1-11
 }
 
+export type ChronoType = "morning" | "afternoon" | "evening" | "night";
+export type PriorityLevel = "hard" | "soft";
+
+export interface UserRule {
+  id: string,
+  text: string,
+  priority: PriorityLevel,
+}
+
+export interface FocusTimePreference {
+  preferredBlocks: TimeInterval[],
+  minimumDuration: number,
+  maximumDuration: number,
+  chronoType: ChronoType,
+  interruptionSensitivity?: "low" | "medium" | "high"
+}
+
 export interface UserPreferences {
   workingHours?: Schedule,
   personelHours?: Schedule,
   meetingHours?: Schedule,
-  rules?: string[],
+  rules?: UserRule[],
   preferredMeetingDuration?: number,
   bufferTimeBetweenMeetings?: number,
-  focusTimePreferences?: string
+  focusTimePreferences?: FocusTimePreference,
   preferredColors?: CategoryColor[]
 }
 
