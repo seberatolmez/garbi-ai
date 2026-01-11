@@ -14,7 +14,7 @@ export default function UserPreferencesPage() {
 
     return (
         <div className="min-h-screen p-8 bg-white">
-            <div className="max-w-3xl">
+            <div className="max-w-3xl mx-auto">
                 {/* Hours Section */}
                 <div className="mb-10">
                     <h2 className="text-lg font-semibold text-gray-800 mb-2">Hours</h2>
