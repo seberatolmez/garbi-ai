@@ -21,6 +21,7 @@
     "@radix-ui/react-tabs": "^1.1.13",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@radix-ui/react-use-controllable-state": "^1.2.2",
+    "@supabase/supabase-js": "^2.91.1",
     "@types/ws": "^8.18.1",
     "ai": "^5.0.84",
     "class-variance-authority": "^0.7.1",
@@ -45,6 +46,7 @@
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
     "shiki": "^3.14.0",
+    "swr": "^2.3.8",
     "tailwind-merge": "^3.3.1",
     "use-stick-to-bottom": "^1.1.1",
     "ws": "^8.18.3"

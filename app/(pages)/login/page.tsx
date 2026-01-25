@@ -19,17 +19,17 @@ export default function LoginPage() {
     <div className="flex flex-col items-center h-screen bg-gray-50">
       <div className="rounded-2xl px-10 py-12 flex flex-col items-center space-y-6">
         <Image
-        src="/garbi-logo.png"
-        alt="Garbi Logo"
-        width={200}
-        height={200}
-      />
+          src="/garbi-logo.png"
+          alt="Garbi Logo"
+          width={200}
+          height={200}
+        />
         <div className="text-center space-y-2">
           <h1 className="text-3xl font-semibold text-gray-800">
             Welcome to Garbi
           </h1>
           <p className="text-gray-500 text-base">
-            {(session? "You already signed in." : "Please sign in to continue.")}
+            {(session ? "You already signed in." : "Please sign in to continue.")}
           </p>
         </div>
 
@@ -45,7 +45,7 @@ export default function LoginPage() {
             onClick={handleSignIn}
             className="flex items-center justify-center w-full gap-3 bg-[#6F55FF] hover:bg-[#5d46e0] text-white font-medium px-7 py-3 rounded-lg shadow-md transition-all duration-200 cursor-pointer"
           >
-            <img
+            <Image
               loading="lazy"
               height="24"
               width="24"
@@ -59,7 +59,7 @@ export default function LoginPage() {
 
         <p className="text-gray-400 text-md pt-4">
           Powered by{" "}
-        <span className="text-[#6F55FF] text-lg font-bold">AI</span>
+          <span className="text-[#6F55FF] text-lg font-bold">AI</span>
         </p>
       </div>
     </div>
