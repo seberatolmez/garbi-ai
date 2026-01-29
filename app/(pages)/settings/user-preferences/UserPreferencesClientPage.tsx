@@ -5,9 +5,11 @@ import { CategoryColorSection } from "@/app/components/CategoryColorSection";
 import { RulesSection } from "@/app/components/RulesSection";
 import { MeetingPreferencesSection } from "@/app/components/MeetingPreferencesSection";
 import { FocusTimeSection } from "@/app/components/FocusTimeSection";
+import { SectionCard } from "@/app/components/ui/SectionCard";
 import { useUserPreferences } from "@/app/hooks/useUserPreferences";
 import { Schedule, CategoryColor, UserRule, FocusTimePreference } from "@/app/types/types";
 import { UserPreferencesData } from "@/lib/supabase-client";
+import { AlertCircle } from "lucide-react";
 
 interface UserPreferencesClientPageProps {
     initialData: UserPreferencesData;
@@ -23,10 +25,31 @@ export function UserPreferencesClientPage({ initialData }: UserPreferencesClient
     // Error state
     if (error) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-white">
-                <div className="text-center">
-                    <p className="text-red-500 mb-2">Failed to load preferences</p>
-                    <p className="text-gray-500 text-sm">Please refresh the page to try again</p>
+            <div className="min-h-[60vh] flex items-center justify-center">
+                <div className="text-center p-8 max-w-md">
+                    <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                        <AlertCircle className="w-8 h-8 text-red-500" />
+                    </div>
+                    <h2 className="text-lg font-semibold text-gray-900 mb-2">
+                        Failed to load preferences
+                    </h2>
+                    <p className="text-gray-500 text-sm mb-4">
+                        We couldn't load your preferences. Please try refreshing the page.
+                    </p>
+                    <button
+                        type="button"
+                        onClick={() => window.location.reload()}
+                        className="
+                            px-5 py-2.5 min-h-[44px]
+                            bg-[var(--color-blue)] text-white
+                            rounded-lg text-sm font-medium
+                            hover:bg-[var(--color-blue)]/90
+                            focus:outline-none focus:ring-2 focus:ring-[var(--color-blue)]/50 focus:ring-offset-2
+                            transition-all duration-200 cursor-pointer
+                        "
+                    >
+                        Refresh Page
+                    </button>
                 </div>
             </div>
         );
@@ -49,24 +72,31 @@ export function UserPreferencesClientPage({ initialData }: UserPreferencesClient
     };
 
     return (
-        <div className="min-h-screen p-8 bg-white">
+        <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 bg-gray-50/50">
             <div className="max-w-3xl mx-auto">
-                {/* Auto-save indicator */}
-                <div className="mb-4 text-right">
-                    <span className="text-xs text-gray-400">
-                        ✓ Changes are saved automatically
-                    </span>
-                </div>
+                {/* Page Header */}
+                <header className="mb-8">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h1 className="text-2xl font-bold text-gray-900">
+                                User Preferences
+                            </h1>
+                            <p className="text-sm text-gray-500 mt-1">
+                                Customize how Garbi schedules your calendar
+                            </p>
+                        </div>
+                        <span className="text-xs text-gray-400 flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-green-400" aria-hidden="true" />
+                            Auto-saving enabled
+                        </span>
+                    </div>
+                </header>
 
                 {/* Hours Section */}
-                <div className="mb-10">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-2">Hours</h2>
-                    <p className="text-sm text-gray-500 leading-relaxed mb-6">
-                        Set your default hours for Garbi's smart calendar scheduling. Unlike regular calendars,
-                        Garbi uses these time windows to intelligently schedule your tasks, meetings, and focus
-                        time within your preferred hours. Your hours are in <strong>GMT+03:00</strong>.
-                    </p>
-
+                <SectionCard
+                    title="Hours"
+                    description="Set your default hours for Garbi's smart calendar scheduling. Unlike regular calendars, Garbi uses these time windows to intelligently schedule your tasks, meetings, and focus time within your preferred hours."
+                >
                     <SchedulePreferenceSection
                         label="Working Hours"
                         subtitle="Default for work Tasks & Habits"
@@ -85,34 +115,54 @@ export function UserPreferencesClientPage({ initialData }: UserPreferencesClient
                         value={personalHours}
                         onChange={(value) => updatePreference('personalHours', value)}
                     />
-                </div>
+                </SectionCard>
 
                 {/* Meeting Preferences Section */}
-                <MeetingPreferencesSection
-                    preferredMeetingDuration={preferredMeetingDuration}
-                    bufferTimeBetweenMeetings={bufferTimeBetweenMeetings}
-                    onDurationChange={(value) => updatePreference('preferredMeetingDuration', value)}
-                    onBufferChange={(value) => updatePreference('bufferTimeBetweenMeetings', value)}
-                />
+                <SectionCard
+                    title="Meeting Preferences"
+                    description="Configure default meeting duration and buffer times between meetings. Garbi will use these preferences when scheduling new meetings."
+                >
+                    <MeetingPreferencesSection
+                        preferredMeetingDuration={preferredMeetingDuration}
+                        bufferTimeBetweenMeetings={bufferTimeBetweenMeetings}
+                        onDurationChange={(value) => updatePreference('preferredMeetingDuration', value)}
+                        onBufferChange={(value) => updatePreference('bufferTimeBetweenMeetings', value)}
+                    />
+                </SectionCard>
 
                 {/* Focus Time Section */}
-                <FocusTimeSection
-                    focusTimePreference={focusTimePreferences}
-                    onChange={(value) => updatePreference('focusTimePreferences', value)}
-                />
+                <SectionCard
+                    title="Focus Time Preferences"
+                    description="Customize how Garbi schedules your deep work sessions. Set your preferred focus blocks, duration limits, and when you're most productive."
+                >
+                    <FocusTimeSection
+                        focusTimePreference={focusTimePreferences}
+                        onChange={(value) => updatePreference('focusTimePreferences', value)}
+                    />
+                </SectionCard>
 
                 {/* Rules Section */}
-                <RulesSection
-                    rules={rules}
-                    onChange={(value) => updatePreference('rules', value)}
-                />
+                <SectionCard
+                    title="Rules"
+                    description="Define custom rules for Garbi to follow when scheduling your events. Hard rules are strictly enforced, while soft rules are preferred but flexible."
+                >
+                    <RulesSection
+                        rules={rules}
+                        onChange={(value) => updatePreference('rules', value)}
+                    />
+                </SectionCard>
 
                 {/* Category Colors Section */}
-                <CategoryColorSection
-                    categoryColors={categoryColors}
-                    onChange={(value) => updatePreference('categoryColors', value)}
-                />
+                <SectionCard
+                    title="Category Colors"
+                    description="Customize how Garbi colors your calendar events. Each category represents a different type of event that Garbi creates or recognizes."
+                >
+                    <CategoryColorSection
+                        categoryColors={categoryColors}
+                        onChange={(value) => updatePreference('categoryColors', value)}
+                    />
+                </SectionCard>
             </div>
         </div>
-    )
+    );
 }

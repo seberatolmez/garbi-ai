@@ -1,27 +1,27 @@
-
 import { Day, Schedule } from "../types/types";
 
-const DAYS: { key: Day; label: string }[] = [
-
-    { key: "MONDAY", label: "Mo" },
-    { key: "TUESDAY", label: "Tu" },
-    { key: "WEDNESDAY", label: "We" },
-    { key: "THURSDAY", label: "Th" },
-    { key: "FRIDAY", label: "Fr" },
-    { key: "SATURDAY", label: "Sa" },
-    { key: "SUNDAY", label: "Su" },
-
+const DAYS: { key: Day; label: string; fullName: string }[] = [
+    { key: "MONDAY", label: "Mo", fullName: "Monday" },
+    { key: "TUESDAY", label: "Tu", fullName: "Tuesday" },
+    { key: "WEDNESDAY", label: "We", fullName: "Wednesday" },
+    { key: "THURSDAY", label: "Th", fullName: "Thursday" },
+    { key: "FRIDAY", label: "Fr", fullName: "Friday" },
+    { key: "SATURDAY", label: "Sa", fullName: "Saturday" },
+    { key: "SUNDAY", label: "Su", fullName: "Sunday" },
 ];
+
+interface DaysPickerProps {
+    value: Schedule;
+    onChange: (next: Schedule) => void;
+    ariaLabel?: string;
+}
 
 export function DaysPicker({
     value,
-    onChange
-}:
-    { value: Schedule, onChange: (next: Schedule) => void }
-
-) {
-
-    function toggleDay(day: Day) {  // 
+    onChange,
+    ariaLabel = "Select days of the week"
+}: DaysPickerProps) {
+    function toggleDay(day: Day) {
         const next = { ...value };
 
         if (next[day]) {
@@ -33,29 +33,36 @@ export function DaysPicker({
         onChange(next);
     }
 
-
     return (
-
-        <div className="flex gap-2">
+        <div
+            role="group"
+            aria-label={ariaLabel}
+            className="flex flex-wrap gap-2"
+        >
             {DAYS.map((d) => {
                 const active = Boolean(value[d.key]);
 
                 return (
                     <button
                         key={d.key}
+                        type="button"
                         onClick={() => toggleDay(d.key)}
-                        className={`w-9 h-9 rounded-full text-sm font-medium transition cursor-pointer
-                            ${active ? "bg-[#3034FF] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                            }`}
+                        aria-pressed={active}
+                        aria-label={d.fullName}
+                        className={`
+                            w-11 h-11 rounded-full text-sm font-medium
+                            transition-all duration-200 cursor-pointer
+                            focus:outline-none focus:ring-2 focus:ring-[var(--color-blue)]/50 focus:ring-offset-2
+                            ${active
+                                ? "bg-[var(--color-blue)] text-white"
+                                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                            }
+                        `}
                     >
-                        {d.label} {/* EX:  "Mo", "Tu" */}
+                        {d.label}
                     </button>
-                )
-            }
-            )}
-
+                );
+            })}
         </div>
-
-    )
-
+    );
 }

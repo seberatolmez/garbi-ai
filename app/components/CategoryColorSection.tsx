@@ -18,27 +18,27 @@ const CATEGORY_DESCRIPTIONS: Record<Category, string> = {
 };
 
 const DEFAULT_COLORS: Record<Category, string> = {
-    "Team Meeting": "3",  // purple
-    "Work": "2",          // green
-    "Personal": "4",      // light red
-    "Travel & Breaks": "6", // orange
-    "External Meeting": "9", // deep blue
-    "Other": "1"          // blue
+    "Team Meeting": "3",
+    "Work": "2",
+    "Personal": "4",
+    "Travel & Breaks": "6",
+    "External Meeting": "9",
+    "Other": "1"
 };
+
+const CATEGORIES: Category[] = [
+    "Team Meeting",
+    "Work",
+    "Personal",
+    "Travel & Breaks",
+    "External Meeting",
+    "Other"
+];
 
 export function CategoryColorSection({
     categoryColors,
     onChange
 }: CategoryColorSectionProps) {
-    const categories: Category[] = [
-        "Team Meeting",
-        "Work",
-        "Personal",
-        "Travel & Breaks",
-        "External Meeting",
-        "Other"
-    ];
-
     const getColorForCategory = (category: Category): string => {
         const found = categoryColors.find(c => c.category === category);
         return found?.color || DEFAULT_COLORS[category];
@@ -56,26 +56,20 @@ export function CategoryColorSection({
     };
 
     return (
-        <div>
-            <div className="mb-5">
-                <h2 className="text-lg font-semibold text-gray-800 mb-2">Category Colors</h2>
-                <p className="text-sm text-gray-500 leading-relaxed">
-                    Customize how Garbi colors your calendar events. Each category represents a different
-                    type of event that Garbi creates or recognizes. Tap on a category to change its color.
-                </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {categories.map(category => (
-                    <CategoryColorCard
-                        key={category}
-                        category={category}
-                        colorId={getColorForCategory(category)}
-                        description={CATEGORY_DESCRIPTIONS[category]}
-                        onChange={(colorId) => handleColorChange(category, colorId)}
-                    />
-                ))}
-            </div>
+        <div
+            role="region"
+            aria-label="Category colors configuration"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+        >
+            {CATEGORIES.map(category => (
+                <CategoryColorCard
+                    key={category}
+                    category={category}
+                    colorId={getColorForCategory(category)}
+                    description={CATEGORY_DESCRIPTIONS[category]}
+                    onChange={(colorId) => handleColorChange(category, colorId)}
+                />
+            ))}
         </div>
     );
 }
