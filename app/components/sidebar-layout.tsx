@@ -6,7 +6,7 @@ import {
   SidebarProvider,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { AppSidebar } from "./app-sidebar";
+import { AppSidebar } from "./Sidebar";
 import { Navbar } from "./navbar";
 
 interface SidebarLayoutProps {

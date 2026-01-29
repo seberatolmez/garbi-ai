@@ -1,6 +1,7 @@
 import NextAuth from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import type { NextAuthOptions } from 'next-auth';
+import { supabase } from '@/lib/supabase-client';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -17,11 +18,40 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
-  callbacks: {
 
-    async jwt({token, account}: {token: any, account: any}) {
+  // Events - triggered on auth actions
+  events: {
+    // Automatically upsert user to Supabase on sign in
+    async signIn({ user }) {
+      if (user.email) {
+        try {
+          const { error } = await supabase
+            .from('users')
+            .upsert(
+              {
+                email: user.email,
+                name: user.name || null,
+                profile_image: user.image || null
+              },
+              { onConflict: 'email' }
+            );
+
+          if (error) {
+            console.error('Error upserting user to Supabase:', error);
+          } else {
+            console.log('User upserted to Supabase:', user.email);
+          }
+        } catch (err) {
+          console.error('Failed to upsert user:', err);
+        }
+      }
+    }
+  },
+
+  callbacks: {
+    async jwt({ token, account }: { token: any, account: any }) {
       // Initial sign in - store tokens
-      if(account) {
+      if (account) {
         token.accessToken = account.access_token;
         token.refreshToken = account.refresh_token;
         token.accessTokenExpires = account.expires_at ? account.expires_at * 1000 : Date.now() + 3600 * 1000;
@@ -29,7 +59,7 @@ export const authOptions: NextAuthOptions = {
       }
 
       // Token is still valid
-      if(token.accessTokenExpires && Date.now() < token.accessTokenExpires) {
+      if (token.accessTokenExpires && Date.now() < token.accessTokenExpires) {
         return token;
       }
 
@@ -37,12 +67,12 @@ export const authOptions: NextAuthOptions = {
       return await refreshAccessToken(token);
     },
 
-  async session({session, token}: {session: any, token: any}) {
-    session.accessToken = token.accessToken;
-    session.error = token.error as string | undefined;
-    return session;
-  }
-},
+    async session({ session, token }: { session: any, token: any }) {
+      session.accessToken = token.accessToken;
+      session.error = token.error as string | undefined;
+      return session;
+    }
+  },
 };
 
 async function refreshAccessToken(token: any) { // TODO: check the logic 
@@ -56,7 +86,7 @@ async function refreshAccessToken(token: any) { // TODO: check the logic
       body: new URLSearchParams({
         client_id: process.env.CLIENT_ID!,
         client_secret: process.env.CLIENT_SECRET!,
-        grant_type: 'refresh_token',  
+        grant_type: 'refresh_token',
         refresh_token: token.refreshToken as string,
       }),
     });

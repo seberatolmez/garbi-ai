@@ -32,7 +32,6 @@ export function SOCKET(
   const deepgram = createClient(apiKey);
   
   // Create live transcription connection
-  // No encoding/sample_rate specified - Deepgram auto-detects webm/opus from browser
   const connection = deepgram.listen.live({
     model: 'nova-2',
     smart_format: true,
@@ -118,7 +117,7 @@ export function SOCKET(
   client.on('close', () => {
     console.log('[Voice Transcribe] Client disconnected');
     if (isDeepgramOpen) {
-      connection.finish();
+      connection.requestClose();
     }
   });
 
@@ -126,7 +125,7 @@ export function SOCKET(
   client.on('error', (error) => {
     console.error('[Voice Transcribe] Client error:', error);
     if (isDeepgramOpen) {
-      connection.finish();
+      connection.requestClose();
     }
   });
 }

@@ -1,3 +1,4 @@
+import { Hash } from "lucide-react";
 import nextAuth from "next-auth";
 import { MouseEvent as ReactMouseEvent } from "react";
 
@@ -59,23 +60,23 @@ export interface CalendarEvent {
 
 export interface EventCardProps {
   event: CalendarEvent;
-  onClick?: (event: CalendarEvent, mouseEvent: ReactMouseEvent) => void; 
+  onClick?: (event: CalendarEvent, mouseEvent: ReactMouseEvent) => void;
 }
 
 // Calculate event position and dimensions
 export interface EventPosition {
-  top: number; 
-  height: number; 
-  startMinutes: number; 
-  endMinutes: number; 
+  top: number;
+  height: number;
+  startMinutes: number;
+  endMinutes: number;
 }
 
 // Group overlapping events and calculate horizontal positions
 export interface PositionedEvent {
   event: CalendarEvent;
   position: EventPosition;
-  left: number; 
-  width: number; 
+  left: number;
+  width: number;
 }
 
 export interface EventDetailsPopoverProps {
@@ -100,5 +101,65 @@ export interface UseVoiceInputReturn {
   error: string | null;
   startRecording: () => Promise<void>;
   stopRecording: () => void;
+}
+
+// user-preferences interfaces 
+
+export type Day =
+  | "MONDAY"
+  | "TUESDAY"
+  | "WEDNESDAY"
+  | "THURSDAY"
+  | "FRIDAY"
+  | "SATURDAY"
+  | "SUNDAY";
+
+export interface TimeInterval {
+  start: string, // "09:00"
+  end: string   // "18:00"
+}
+export type Schedule = { // for working, meeting and personel hours 
+  [key in Day]?: TimeInterval[]
+};
+
+export type Category =
+  | "Team Meeting"
+  | "Work"
+  | "Personal"
+  | "External Meeting"
+  | "Travel & Breaks"
+  | "Other";
+
+export interface CategoryColor {
+  category: Category;
+  color: string; // Google Calendar color between 1-11
+}
+
+export type ChronoType = "morning" | "afternoon" | "evening" | "night";
+export type PriorityLevel = "hard" | "soft";
+
+export interface UserRule {
+  id: string,
+  text: string,
+  priority: PriorityLevel,
+}
+
+export interface FocusTimePreference {
+  preferredBlocks: TimeInterval[],
+  minimumDuration: number,
+  maximumDuration: number,
+  chronoType: ChronoType,
+  interruptionSensitivity?: "low" | "medium" | "high"
+}
+
+export interface UserPreferences {
+  workingHours?: Schedule,
+  personelHours?: Schedule,
+  meetingHours?: Schedule,
+  rules?: UserRule[],
+  preferredMeetingDuration?: number,
+  bufferTimeBetweenMeetings?: number,
+  focusTimePreferences?: FocusTimePreference,
+  preferredColors?: CategoryColor[]
 }
 
