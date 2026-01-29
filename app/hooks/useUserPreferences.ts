@@ -11,13 +11,18 @@ const fetcher = (url: string) => fetch(url).then(res => {
 
 const DEBOUNCE_MS = 1000 // Debounce saves by 1 second
 
-export function useUserPreferences() {
+interface UseUserPreferencesOptions {
+    fallbackData?: UserPreferencesData;
+}
+
+export function useUserPreferences(options?: UseUserPreferencesOptions) {
     const { data, error, isLoading, mutate } = useSWR<UserPreferencesData>(
         '/api/user-preferences',
         fetcher,
         {
             revalidateOnFocus: false,
-            dedupingInterval: 5000
+            dedupingInterval: 5000,
+            fallbackData: options?.fallbackData
         }
     )
 
