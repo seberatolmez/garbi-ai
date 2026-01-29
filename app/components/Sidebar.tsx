@@ -19,12 +19,12 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar"
 
-import { usePathname,useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 
 
 
 const primaryItems = [
-  { title: "Ask AI", icon: Zap, url: "/",special: "askAI"},
+  { title: "Ask AI", icon: Zap, url: "/ask-ai", special: "askAI" },
   { title: "Task", icon: CheckSquare, url: "#" }, // to be implemented later 
   { title: "Timeline", icon: CalendarDays, url: "/timeline" },
 ]
@@ -54,22 +54,22 @@ export function AppSidebar() {
               {primaryItems.map((item) => {
                 const isActive = pathname === item.url;
                 const isAskAi = item.special === "askAI";
-                
+
                 return (
                   <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    className={isAskAi ? "text-[var(--color-blue)] font-semibold" : ""}
-                    variant={isAskAi ? "askAI": "outline"}
-                    onClick={() => router.push(item.url)}
-                    aria-current={isActive ? "page" : undefined}
-                  >
-                    <item.icon/>
-                    <span>{item.title}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                    <SidebarMenuButton
+                      className={isAskAi ? "text-[var(--color-blue)] font-semibold" : ""}
+                      variant={isAskAi ? "askAI" : "outline"}
+                      onClick={() => router.push(item.url)}
+                      aria-current={isActive ? "page" : undefined}
+                    >
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                 )
-                
-      })}
+
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
